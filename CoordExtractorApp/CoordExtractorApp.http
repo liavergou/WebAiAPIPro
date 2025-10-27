@@ -1,0 +1,6 @@
+@CoordExtractorApp_HostAddress = http://localhost:5167
+
+GET {{CoordExtractorApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
