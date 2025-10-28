@@ -6,7 +6,7 @@ namespace CoordExtractorApp.Data
     {
       public int Id { get; set; }
         public string OriginalFileName { get; set; } = null!;
-        public string CroppedFileName { get; set; } = null!;
+        public string? CroppedFileName { get; set; } = null!;
 
         public string ModelUsed {  get; set; } = null!;
 
@@ -16,10 +16,13 @@ namespace CoordExtractorApp.Data
 
         public int PromptId { get; set; } //foreign key     
         public int UserId { get; set; } //foreign key     
+        public int ProjectId { get; set; } //foreign key
 
         public virtual Prompt Prompt { get; set; } = null!; 
 
         public virtual User User { get; set; } = null!;
+
+        public virtual Project Project { get; set; } = null!;
 
     }
 }

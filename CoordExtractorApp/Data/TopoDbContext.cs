@@ -72,6 +72,7 @@ namespace CoordExtractorApp.Data
 
                 entity.HasMany(e => e.Users).WithMany(e => e.Projects)
                .UsingEntity<Dictionary<string, object>>("ProjectsUsers");
+                           
 
             });
 
@@ -95,6 +96,7 @@ namespace CoordExtractorApp.Data
 
                 entity.HasIndex(e => e.UserId, "IX_ConversionJobs_UserId");
                 entity.HasIndex(e => e.PromptId, "IX_ConversionJobs_PromptId");
+                entity.HasIndex(e => e.ProjectId, "IX_ConversionJobs_ProjectId");
 
 
                 entity.HasOne(e => e.User)
@@ -106,6 +108,9 @@ namespace CoordExtractorApp.Data
                 .WithMany() //για να έχει πολλά Jobs              
                 .OnDelete(DeleteBehavior.Restrict); //αν διαγραφεί το prompt να μην κανει cascade delete
 
+                entity.HasOne (e => e.Project)
+                .WithMany( e=> e.ConversionJobs)
+                .OnDelete(DeleteBehavior.Restrict);
             });
 
 

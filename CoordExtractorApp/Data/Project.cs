@@ -10,5 +10,7 @@
 
         public virtual ICollection<User> Users { get; set; } = new List<User>(); //navigation property
 
+        public virtual ICollection<ConversionJob> ConversionJobs { get; set; } = new List<ConversionJob>();
+
     }
 }
