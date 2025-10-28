@@ -3,11 +3,16 @@
     public abstract class BaseEntity
     {
 
-        public DateTime InsertAt {  get; set; }= DateTime.UtcNow;
+        public DateTime InsertedAt {  get; set; }= DateTime.UtcNow;
         public DateTime ModifiedAt { get; set; }
 
-        public bool? IsDeleted { get; set; } = false;
-
         public DateTime? DeletedAt { get; set; }
+
+        public int InsertedBy { get; set; }
+        public int ModifiedBy { get; set; }
+
+        public int? DeletedBy { get; set; }
+
+
     }
 }
