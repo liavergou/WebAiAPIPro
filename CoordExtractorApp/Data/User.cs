@@ -18,5 +18,10 @@ namespace CoordExtractorApp.Data
         public string Email { get; set; } = null!;
 
         public UserRole? UserRole { get; set; } = null!; // enum: Admin, Manager, Member)
+
+        public virtual ICollection<Project> Projects { get; set; } = new List<Project>(); //navigation property
+
+        public virtual ICollection<ConversionJob> ConversionJobs { get;set; } = new List<ConversionJob>(); //navigation property
+
     }
 }
