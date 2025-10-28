@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+
 namespace CoordExtractorApp
 {
     public class Program
@@ -6,6 +8,10 @@ namespace CoordExtractorApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
+            options.UseSqlServer(connString));
 
             // Add services to the container.
 
