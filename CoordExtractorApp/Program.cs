@@ -1,4 +1,5 @@
 
+using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoordExtractorApp
@@ -8,6 +9,17 @@ namespace CoordExtractorApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            //για το keyvault του azure
+            var keyVaultUri = builder.Configuration["https://kv-coordextractorapp-dev.vault.azure.net/"];
+
+            if (!string.IsNullOrWhiteSpace(keyVaultUri))
+            {
+                builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+            }
+
+           
+
             var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
@@ -21,6 +33,15 @@ namespace CoordExtractorApp
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            //key vault test connection
+            app.MapGet("/kv-test", (IConfiguration cfg) =>
+            {
+                var val = cfg["ConnectionStrings:DefaultConnection"];
+                return Results.Ok(new { hasValue = !string.IsNullOrEmpty(val) });
+            });
+
+            
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
