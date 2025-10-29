@@ -25,7 +25,7 @@ namespace CoordExtractorApp.Data
                 entity.HasKey(e => e.Id);   // Optional if 'Id' is the convention
                 entity.Property(e => e.Username).HasMaxLength(50);  // define max length is MAX
                 entity.Property(e => e.Email).HasMaxLength(100);
-                entity.Property(e => e.Password).HasMaxLength(60);
+                entity.Property(e => e.Password).HasMaxLength(50);
                 entity.Property(e => e.Lastname).HasMaxLength(255);
                 entity.Property(e => e.Firstname).HasMaxLength(255);
                 entity.Property(e => e.UserRole).HasMaxLength(20).HasConversion<string>();
