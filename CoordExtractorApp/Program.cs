@@ -1,5 +1,6 @@
 
 using Azure.Identity;
+using CoordExtractorApp.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoordExtractorApp
@@ -11,22 +12,34 @@ namespace CoordExtractorApp
             var builder = WebApplication.CreateBuilder(args);
 
             //για το keyvault του azure
-            var keyVaultUri = builder.Configuration["https://kv-coordextractorapp-dev.vault.azure.net/"];
+            var keyVaultUri = builder.Configuration["KeyVaultUri"];
 
             if (!string.IsNullOrWhiteSpace(keyVaultUri))
             {
                 builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
             }
 
-           
+            var geminiApiKey = builder.Configuration["Gemini:Credentials:ApiKey"];
 
+            // **CONNECTION STRING**
             var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+            // **SERVICES ΣΤΟ DI CONTAINER**
             builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
-            options.UseSqlServer(connString));
+            options.UseNpgsql(connString));
 
-            // Add services to the container.
+            //Repositories & Unit of Work (μέσω της Extension Method)
+            builder.Services.AddRepositories();
+            builder.Services.AddScoped<IUserRepository, UserRepository>(); // Καταχώρηση UserRepository
 
+
+            // Services (για το dependency injection
+
+            // AutoMapper
+
+            //**AUTHENTICATION ME JWT**
+
+            //**CORS**
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -34,15 +47,16 @@ namespace CoordExtractorApp
 
             var app = builder.Build();
 
-            //key vault test connection
+            //KEY VAULT TEST CONNECTION
             app.MapGet("/kv-test", (IConfiguration cfg) =>
             {
-                var val = cfg["ConnectionStrings:DefaultConnection"];
-                return Results.Ok(new { hasValue = !string.IsNullOrEmpty(val) });
+                //var val = cfg["ConnectionStrings:DefaultConnection"];
+                //return Results.Ok(new { hasValue = !string.IsNullOrEmpty(val) });
+                var safeConn = connString?.Replace("Password=", "Password=***");
+                return Results.Ok(new { connectionString = safeConn });
             });
 
-            
-
+        
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

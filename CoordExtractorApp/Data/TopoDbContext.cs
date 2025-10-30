@@ -31,10 +31,10 @@ namespace CoordExtractorApp.Data
                 entity.Property(e => e.UserRole).HasMaxLength(20).HasConversion<string>();
                 entity.Property(e => e.InsertedAt)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.ModifiedAt)
                 .ValueGeneratedOnAddOrUpdate()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasIndex(e => e.Username, "IX_Users_Username").IsUnique();
 
@@ -48,10 +48,10 @@ namespace CoordExtractorApp.Data
                 entity.Property(e => e.PromptText);
                 entity.Property(e => e.InsertedAt)
                     .ValueGeneratedOnAdd()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.ModifiedAt)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasIndex(e => e.PromptName, "IX_Prompts_PromptName").IsUnique();
             });
@@ -64,10 +64,10 @@ namespace CoordExtractorApp.Data
                 entity.Property(e => e.Description).HasMaxLength(500);
                 entity.Property(e => e.InsertedAt)
                     .ValueGeneratedOnAdd()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.ModifiedAt)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.HasIndex(e => e.ProjectName, "IX_Projects_ProjectName").IsUnique();
 
                 entity.HasMany(e => e.Users).WithMany(e => e.Projects)
@@ -88,10 +88,10 @@ namespace CoordExtractorApp.Data
 
                 entity.Property(e => e.InsertedAt)
                     .ValueGeneratedOnAdd()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.ModifiedAt)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 
                 entity.HasIndex(e => e.UserId, "IX_ConversionJobs_UserId");
