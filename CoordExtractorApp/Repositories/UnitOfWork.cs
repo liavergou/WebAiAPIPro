@@ -15,6 +15,7 @@ namespace CoordExtractorApp.Repositories
 
        
         public UserRepository UserRepository => new (context);
+        public PromptRepository PromptRepository => new(context);
 
         public async Task<bool> SaveAsync()
         {
