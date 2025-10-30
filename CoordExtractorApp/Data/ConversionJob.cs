@@ -1,4 +1,6 @@
 ﻿using CoordExtractorApp.Core.Enums;
+using NetTopologySuite.Geometries;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CoordExtractorApp.Data
 {
@@ -10,7 +12,11 @@ namespace CoordExtractorApp.Data
 
         public string ModelUsed {  get; set; } = null!;
 
-        public string WktOutput { get; set; } = null!;
+        //public string WktOutput { get; set; } = null!;
+        //αντικατάσταση με property τυπου Geometry. Προσοχή! 2100 egsa 87. 4326 είναι για wgs84 
+        [Column(TypeName = "geometry(Polygon, 2100)")]
+        public Geometry Geom { get; set; } = null!;
+
 
         public string ImageFileId { get; set; } = null!;
 

@@ -2,6 +2,8 @@
 using Azure.Identity;
 using CoordExtractorApp.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using NetTopologySuite.IO;
 
 namespace CoordExtractorApp
 {
@@ -27,6 +29,10 @@ namespace CoordExtractorApp
             // **SERVICES ΣΤΟ DI CONTAINER**
             builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
             options.UseNpgsql(connString));
+            //για το postgis
+            builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
+            options.UseNpgsql(connString, o => o.UseNetTopologySuite())
+);
 
             //Repositories & Unit of Work (μέσω της Extension Method)
             builder.Services.AddRepositories();

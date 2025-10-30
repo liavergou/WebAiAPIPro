@@ -83,7 +83,7 @@ namespace CoordExtractorApp.Data
                 entity.Property(e => e.OriginalFileName).HasMaxLength(50);
                 entity.Property(e => e.CroppedFileName).HasMaxLength(50);
                 entity.Property(e => e.ModelUsed).HasMaxLength(50);
-                entity.Property(e => e.WktOutput);
+                //entity.Property(e => e.WktOutput);
                 entity.Property(e => e.ImageFileId).HasMaxLength(50);
 
                 entity.Property(e => e.InsertedAt)

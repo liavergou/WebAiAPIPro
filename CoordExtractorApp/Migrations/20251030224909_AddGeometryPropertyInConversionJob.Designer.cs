@@ -3,6 +3,7 @@ using System;
 using CoordExtractorApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoordExtractorApp.Migrations
 {
     [DbContext(typeof(TopoDbContext))]
-    partial class TopoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030224909_AddGeometryPropertyInConversionJob")]
+    partial class AddGeometryPropertyInConversionJob
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +47,7 @@ namespace CoordExtractorApp.Migrations
 
                     b.Property<Geometry>("Geom")
                         .IsRequired()
-                        .HasColumnType("geometry(Polygon, 2100)");
+                        .HasColumnType("geometry(Polygon, 4326)");
 
                     b.Property<string>("ImageFileId")
                         .IsRequired()
