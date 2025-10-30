@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# JetBrains IDEs (Rider, IntelliJ)
+/.idea
+
 # User-specific files
 *.rsuser
 *.suo
@@ -361,3 +364,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/CLAUDE.md
+/GENERATIVE_AI_README.md
+/.gitignore
+/nul
+/installed_packages.txt
