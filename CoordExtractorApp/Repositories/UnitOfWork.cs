@@ -17,6 +17,8 @@ namespace CoordExtractorApp.Repositories
         public UserRepository UserRepository => new (context);
         public PromptRepository PromptRepository => new(context);
 
+        public ProjectRepository ProjectRepository => new(context);
+
         public async Task<bool> SaveAsync()
         {
             return await context.SaveChangesAsync() > 0; //κανει commit ή αυτόματο rollback σε exception
