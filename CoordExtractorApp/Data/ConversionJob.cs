@@ -17,7 +17,7 @@ namespace CoordExtractorApp.Data
         [Column(TypeName = "geometry(Polygon, 2100)")]
         public Geometry? Geom { get; set; } = null!; //επίσης αλλαγή σε nullable
 
-        public string? ImageFileId { get; set; } //mongo file id. αλλαγή σε nullable
+        public string? MongoImageFileId { get; set; } //mongo file id. αλλαγή σε nullable
 
         public JobStatus Status { get; set; } = JobStatus.Pending;
 

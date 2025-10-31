@@ -364,8 +364,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/CLAUDE.md
 /GENERATIVE_AI_README.md
-/.gitignore
-/nul
 /installed_packages.txt
