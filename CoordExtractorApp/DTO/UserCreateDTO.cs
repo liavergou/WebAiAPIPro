@@ -11,7 +11,8 @@ namespace CoordExtractorApp.DTO
 
         [Required(ErrorMessage = "The {0} field is required.")]
         [StringLength(100, ErrorMessage = "Email must not exceed 100 characters.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+            ErrorMessage = "Email is not valid")]
         public string? Email { get; set; }
 
         [Required(ErrorMessage = "The {0} field is required.")]
