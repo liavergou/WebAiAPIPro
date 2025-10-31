@@ -81,10 +81,11 @@ namespace CoordExtractorApp.Data
                 entity.ToTable("ConversionJobs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.OriginalFileName).HasMaxLength(50);
-                entity.Property(e => e.CroppedFileName).HasMaxLength(50);
+                //entity.Property(e => e.CroppedFileName).HasMaxLength(50);
                 entity.Property(e => e.ModelUsed).HasMaxLength(50);
                 //entity.Property(e => e.WktOutput);
-                entity.Property(e => e.ImageFileId).HasMaxLength(50);
+                entity.Property(e => e.ImageFileId).HasMaxLength(50);         
+                entity.Property(e => e.Status).HasMaxLength(20).HasConversion<string>();
 
                 entity.Property(e => e.InsertedAt)
                     .ValueGeneratedOnAdd()

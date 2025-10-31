@@ -8,17 +8,18 @@ namespace CoordExtractorApp.Data
     {
       public int Id { get; set; }
         public string OriginalFileName { get; set; } = null!;
-        public string? CroppedFileName { get; set; } = null!;
+        //public string? CroppedFileName { get; set; } = null!;
 
-        public string ModelUsed {  get; set; } = null!;
+        public string? ModelUsed {  get; set; }
 
         //public string WktOutput { get; set; } = null!;
         //αντικατάσταση με property τυπου Geometry. Προσοχή! 2100 egsa 87. 4326 είναι για wgs84 
         [Column(TypeName = "geometry(Polygon, 2100)")]
-        public Geometry Geom { get; set; } = null!;
+        public Geometry? Geom { get; set; } = null!; //επίσης αλλαγή σε nullable
 
+        public string? ImageFileId { get; set; } //mongo file id. αλλαγή σε nullable
 
-        public string ImageFileId { get; set; } = null!;
+        public JobStatus Status { get; set; } = JobStatus.Pending;
 
         public int PromptId { get; set; } //foreign key     
         public int UserId { get; set; } //foreign key     
@@ -30,5 +31,7 @@ namespace CoordExtractorApp.Data
 
         public virtual Project Project { get; set; } = null!;
 
+             
+        //TODO ???? error απο το gemini
     }
 }
