@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CoordExtractorApp.Core.Enums;
 using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
@@ -13,44 +14,44 @@ namespace CoordExtractorApp.Services
 {
     public class UserService : IUserService
     {
-      
-        private readonly IUnitOfWork unitOfWork;     
-        private readonly IMapper mapper;        
+
+        private readonly IUnitOfWork unitOfWork;
+        private readonly IMapper mapper;
         private readonly ILogger<UserService> logger = new LoggerFactory().AddSerilog().CreateLogger<UserService>();
 
-        
+
         public UserService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
 
-       
+
 
         public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO)
         {
             List<User> users = [];
             //μετατροπή φίλτρων σε predicates
-            
+
             List<Expression<Func<User, bool>>> predicates = [];
 
-            
+
             if (!string.IsNullOrEmpty(userFiltersDTO.Username))
             {
                 predicates.Add(u => u.Username == userFiltersDTO.Username);
             }
 
-            
+
             if (!string.IsNullOrEmpty(userFiltersDTO.UserRole))
             {
                 predicates.Add(u => u.UserRole.ToString() == userFiltersDTO.UserRole);
             }
 
-            
+
             var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, predicates);
 
-            
+
             var dtoResult = new PaginatedResult<UserReadOnlyDTO>()
             {
                 Data = result.Data.Select(u => new UserReadOnlyDTO
@@ -108,10 +109,10 @@ namespace CoordExtractorApp.Services
                 return new UserReadOnlyDTO
                 {
                     Id = user.Id,
-                    Username = user.Username,
-                    Email = user.Email,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
+                    Username = user.Username!,
+                    Email = user.Email!,
+                    Firstname = user.Firstname!,
+                    Lastname = user.Lastname!,
                     UserRole = user.UserRole.ToString()!
                 };
             }
@@ -151,26 +152,49 @@ namespace CoordExtractorApp.Services
             return user;
         }
 
-        public async Task<UserReadOnlyDTO?> CreateUserAsync(UserCreateDTO dto)
+
+        public async Task CreateUserAsync(UserCreateDTO request)
         {
-            var userexists = await unitOfWork.UserRepository.GetUserByUsernameAsync(dto.Username);
-            if (userexists != null) {
-                throw new EntityAlreadyExistsException("User", $"{dto.Username} already exists");
-            
-        }
-
-            var user = new User
+            User user = ExtractUser(request);
+            try
             {
-                Username = dto.Username,
-                Password = EncryptionUtil.Encrypt(dto.Password),
-                Email = dto.Email,
-                Lastname = dto.Lastname,
-                Firstname = dto.Firstname,
-                UserRole = dto.UserRole
+
+                User? existingUser = await unitOfWork.UserRepository.GetUserByUsernameAsync(user.Username);
+
+                if (existingUser != null)
+                {
+                    throw new EntityAlreadyExistsException("User", "User with username " +
+                            existingUser.Username + " already exists");
+                }
+
+                user.Password = EncryptionUtil.Encrypt(user.Password);
+
+                await unitOfWork.UserRepository.AddAsync(user);
+
+
+                await unitOfWork.SaveAsync();
+
+                logger.LogInformation("User {Username} signed up successfully.", user);
+            }
+            catch (EntityAlreadyExistsException ex)
+            {
+                logger.LogError("Error creating user {Username}. {Message}", user, ex.Message);
+                throw;
+            }
+        }
+               
+        //helper method (απο πρώτο project)
+        private User ExtractUser(UserCreateDTO createDTO)
+        {
+            return new User()
+            {
+                Username = createDTO.Username!,
+                Password = createDTO.Password!,
+                Email = createDTO.Email!,
+                Firstname = createDTO.Firstname!,
+                Lastname = createDTO.Lastname!,
+                UserRole = createDTO.UserRole
             };
-
-
-        //TODO: JWT token για authentication
-
+        }
     }
 }
