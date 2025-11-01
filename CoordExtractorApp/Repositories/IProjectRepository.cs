@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Repositories
 {
-    public interface IProjectRepository : IBaseRepository<Project>
+    public interface IProjectRepository
     {
         Task<Project?> GetProjectByProjectNameAsync(string projectName);
         Task<PaginatedResult<Project>> GetProjectsAsync(int pageNumber, int pageSize,

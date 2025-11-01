@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Repositories
 {
-    public interface IPromptRepository :IBaseRepository<Prompt>
+    public interface IPromptRepository
     {
         Task<Prompt?>GetPromptByPromptNameAsync(string promptName);
         Task<PaginatedResult<Prompt>> GetPromptsAsync(int pageNumber, int pageSize,
