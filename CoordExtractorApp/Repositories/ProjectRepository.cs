@@ -7,7 +7,9 @@ namespace CoordExtractorApp.Repositories
 {
     public class ProjectRepository : BaseRepository<Project>, IProjectRepository
 
-    {//constructor
+
+    {
+        //constructor
         public ProjectRepository(TopoDbContext context) : base(context) { }
 
         public async Task<Project?> GetProjectByProjectNameAsync(string projectName)
@@ -39,7 +41,7 @@ namespace CoordExtractorApp.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            var result = new PaginatedResult<Prompt>
+            var result = new PaginatedResult<Project>
             {
                 Data = data,
                 TotalRecords = totalRecords,
@@ -50,3 +52,4 @@ namespace CoordExtractorApp.Repositories
             return result;
         }
     }
+}
