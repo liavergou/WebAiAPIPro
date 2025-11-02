@@ -37,6 +37,7 @@ namespace CoordExtractorApp.Data
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasIndex(e => e.Username, "IX_Users_Username").IsUnique();
+                
 
             });
 
@@ -113,6 +114,12 @@ namespace CoordExtractorApp.Data
                 .WithMany( e=> e.ConversionJobs)
                 .OnDelete(DeleteBehavior.Restrict);
             });
+
+            //global query filters για να μην επιστρέφει τις διεγραμμένες εγγραφές
+            modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedAt == null);
+            modelBuilder.Entity<Project>().HasQueryFilter(e => e.DeletedAt == null);
+            modelBuilder.Entity<Prompt>().HasQueryFilter (e => e.DeletedAt == null);
+
 
 
         }
