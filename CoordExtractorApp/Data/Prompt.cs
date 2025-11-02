@@ -2,7 +2,7 @@
 {
     public class Prompt : BaseEntity
     {
-        public int Id { get; set; }
+        
 
         public string PromptName { get; set; } = null!;
 

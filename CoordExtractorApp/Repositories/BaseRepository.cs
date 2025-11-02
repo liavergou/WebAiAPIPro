@@ -27,6 +27,7 @@ namespace CoordExtractorApp.Repositories
         public virtual Task UpdateAsync(T entity)
 
         {
+            entity.ModifiedAt = DateTime.UtcNow;
             dbSet.Attach(entity);
             context.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask; //είναι σαν void             
