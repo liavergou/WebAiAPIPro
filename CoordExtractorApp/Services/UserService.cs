@@ -196,5 +196,71 @@ namespace CoordExtractorApp.Services
                 UserRole = createDTO.UserRole
             };
         }
+
+        public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto)
+        {
+            try
+            {
+                var user = await unitOfWork.UserRepository.GetAsync(id);
+
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
+                }
+
+                // Partial update - only update fields that are provided
+                if (userupdatedto.Username != null) user.Username = userupdatedto.Username;
+                if (userupdatedto.Email != null) user.Email = userupdatedto.Email;
+                if (userupdatedto.Firstname != null) user.Firstname = userupdatedto.Firstname;
+                if (userupdatedto.Lastname != null) user.Lastname = userupdatedto.Lastname;
+                if (userupdatedto.UserRole != null) user.UserRole = userupdatedto.UserRole.Value;
+
+                // Password update (with encryption)
+                if (userupdatedto.Password != null)
+                {
+                    user.Password = EncryptionUtil.Encrypt(userupdatedto.Password);
+                }
+
+                // ModifiedAt set by Repository.UpdateAsync
+                await unitOfWork.UserRepository.UpdateAsync(user);
+                await unitOfWork.SaveAsync();
+
+                logger.LogInformation("User {Id} updated successfully.", id);
+                return true;
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error updating user {Id}. {Message}", id, ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            try
+            {
+                var user = await unitOfWork.UserRepository.GetAsync(id);
+
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
+                }
+
+                user.DeletedAt = DateTime.UtcNow;
+                user.ModifiedAt = DateTime.UtcNow;
+
+
+                await unitOfWork.SaveAsync();
+                logger.LogInformation("User {id} deleted successfully.", user);
+                return true;
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error deleting user {id}. {Message}", id, ex.Message);
+                throw;
+            }
+
+
+        }
     }
 }

@@ -19,7 +19,11 @@ namespace CoordExtractorApp.Services
 
         Task CreateUserAsync (UserCreateDTO request);
 
-        //Task UpdateUserAsync(UserUpdateDTO request);
+        Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto);
+
+        Task<bool> DeleteUserAsync(int id);
+
+
 
 
 
