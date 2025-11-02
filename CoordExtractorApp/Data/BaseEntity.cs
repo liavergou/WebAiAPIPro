@@ -8,10 +8,10 @@
 
         public DateTime? DeletedAt { get; set; }
 
-        public int InsertedBy { get; set; }
-        public int ModifiedBy { get; set; }
+        //public int InsertedBy { get; set; }
+        //public int ModifiedBy { get; set; }
 
-        public int? DeletedBy { get; set; }
+        //public int? DeletedBy { get; set; }
 
 
     }
