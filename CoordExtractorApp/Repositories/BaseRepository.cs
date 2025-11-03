@@ -29,8 +29,8 @@ namespace CoordExtractorApp.Repositories
         {
             entity.ModifiedAt = DateTime.UtcNow;
             dbSet.Attach(entity);
-            context.Entry(entity).State = EntityState.Modified;
-            return Task.CompletedTask; //είναι σαν void             
+            context.Entry(entity).State = EntityState.Modified; //θα δουλεψει και χωρις?
+            return Task.CompletedTask; //είναι σαν void
         }
 
 
@@ -43,7 +43,7 @@ namespace CoordExtractorApp.Repositories
             return true;
 
         }
-        //IEnumerable - > iteratable ***τα deleted δεν πρεπει να εξαιρεθούν???
+        //IEnumerable Εχω βάλει global filters για τα deleted
         public virtual async Task<IEnumerable<T>> GetAllAsync() => await dbSet.ToListAsync();
 
         //null αν δεν υπάρχει
