@@ -10,12 +10,11 @@ namespace CoordExtractorApp.Services
 
         Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials);
 
+        Task<User?> GetUserByIdAsync(int id);
         Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username);
 
         Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
-            UserFiltersDTO userFiltersDTO);
-
-        Task<User?> GetUserByIdAsync(int id);
+            UserFiltersDTO userFiltersDTO);        
 
         Task CreateUserAsync (UserCreateDTO request);
 

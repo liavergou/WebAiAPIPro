@@ -26,51 +26,6 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
-
-
-        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
-            UserFiltersDTO userFiltersDTO)
-        {
-            List<User> users = [];
-            //μετατροπή φίλτρων σε predicates
-
-            List<Expression<Func<User, bool>>> predicates = [];
-
-
-            if (!string.IsNullOrEmpty(userFiltersDTO.Username))
-            {
-                predicates.Add(u => u.Username == userFiltersDTO.Username);
-            }
-
-
-            if (!string.IsNullOrEmpty(userFiltersDTO.UserRole))
-            {
-                predicates.Add(u => u.UserRole.ToString() == userFiltersDTO.UserRole);
-            }
-
-
-            var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, predicates);
-
-
-            var dtoResult = new PaginatedResult<UserReadOnlyDTO>()
-            {
-                Data = result.Data.Select(u => new UserReadOnlyDTO
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    Email = u.Email,
-                    Firstname = u.Firstname,
-                    Lastname = u.Lastname,
-                    UserRole = u.UserRole.ToString()!
-                }).ToList(),
-                TotalRecords = result.TotalRecords,
-                PageNumber = result.PageNumber,
-                PageSize = result.PageSize
-            };
-            logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
-            return dtoResult;
-        }
-
         //Αναζήτηση χρήστη με βάση το id
 
         public async Task<User?> GetUserByIdAsync(int id)
@@ -124,6 +79,52 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
+            UserFiltersDTO userFiltersDTO)
+        {
+            List<User> users = []; //δεν το χρησιμοποιώ πουθενά.Γιατι το εχουμε βαλει?
+            //μετατροπή φίλτρων σε predicates
+
+            List<Expression<Func<User, bool>>> predicates = [];
+
+
+            if (!string.IsNullOrEmpty(userFiltersDTO.Username))
+            {
+                predicates.Add(u => u.Username == userFiltersDTO.Username);
+            }
+
+
+            if (!string.IsNullOrEmpty(userFiltersDTO.UserRole))
+            {
+                predicates.Add(u => u.UserRole.ToString() == userFiltersDTO.UserRole);
+            }
+
+
+            var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, predicates);
+
+
+            var dtoResult = new PaginatedResult<UserReadOnlyDTO>()
+            {
+                //γιατι να μη βαλω αντι για new UserReadOnlyDTO απο τον mapper mapper.Map<UserReadOnlyDTO>(u).toList()
+                Data = result.Data.Select(u => new UserReadOnlyDTO
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Email = u.Email,
+                    Firstname = u.Firstname,
+                    Lastname = u.Lastname,
+                    UserRole = u.UserRole.ToString()!
+                }).ToList(),
+                TotalRecords = result.TotalRecords,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize
+            };
+            logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
+            return dtoResult;
+        }
+
+       
+
         // Έλεγχος credentials και επιστροφή user για login
         public async Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials)
         {
@@ -155,7 +156,7 @@ namespace CoordExtractorApp.Services
 
         public async Task CreateUserAsync(UserCreateDTO request)
         {
-            User user = ExtractUser(request);
+            User user = mapper.Map<User>(request);
             try
             {
 
@@ -183,19 +184,6 @@ namespace CoordExtractorApp.Services
             }
         }
                
-        //helper method (απο πρώτο project)
-        private User ExtractUser(UserCreateDTO createDTO)
-        {
-            return new User()
-            {
-                Username = createDTO.Username!,
-                Password = createDTO.Password!,
-                Email = createDTO.Email!,
-                Firstname = createDTO.Firstname!,
-                Lastname = createDTO.Lastname!,
-                UserRole = createDTO.UserRole
-            };
-        }
 
         public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto)
         {
@@ -208,21 +196,19 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("User", $"User with id: {id} not found");
                 }
 
-                // Partial update - only update fields that are provided
+                // Partial update
                 if (userupdatedto.Username != null) user.Username = userupdatedto.Username;
                 if (userupdatedto.Email != null) user.Email = userupdatedto.Email;
                 if (userupdatedto.Firstname != null) user.Firstname = userupdatedto.Firstname;
                 if (userupdatedto.Lastname != null) user.Lastname = userupdatedto.Lastname;
                 if (userupdatedto.UserRole != null) user.UserRole = userupdatedto.UserRole.Value;
 
-                // Password update (with encryption)
+               
                 if (userupdatedto.Password != null)
                 {
                     user.Password = EncryptionUtil.Encrypt(userupdatedto.Password);
-                }
-
-                // ModifiedAt set by Repository.UpdateAsync
-                await unitOfWork.UserRepository.UpdateAsync(user);
+                }                                
+                
                 await unitOfWork.SaveAsync();
 
                 logger.LogInformation("User {Id} updated successfully.", id);
@@ -239,19 +225,15 @@ namespace CoordExtractorApp.Services
         {
             try
             {
-                var user = await unitOfWork.UserRepository.GetAsync(id);
+                bool deletedUser = await unitOfWork.UserRepository.DeleteAsync(id);
 
-                if (user == null)
+                if (!deletedUser)
                 {
                     throw new EntityNotFoundException("User", $"User with id: {id} not found");
                 }
-
-                user.DeletedAt = DateTime.UtcNow;
-                user.ModifiedAt = DateTime.UtcNow;
-
-
+                            
                 await unitOfWork.SaveAsync();
-                logger.LogInformation("User {id} deleted successfully.", user);
+                logger.LogInformation("User with {id} deleted successfully.", id);
                 return true;
             }
             catch (EntityNotFoundException ex)
