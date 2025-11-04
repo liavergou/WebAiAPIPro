@@ -122,7 +122,7 @@ namespace CoordExtractorApp
 
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
             {
-                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore; //αν ενα πεδιο στο DTO είναι κενό να μην το βάλει
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Include; //αν ενα πεδιο στο DTO είναι κενό να το βάλει
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize; //για να αντιμετωπίσει το προβλημα του circular
                 options.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
