@@ -9,9 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetTopologySuite.IO;
+using Newtonsoft.Json.Converters;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Serilog;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 
 namespace CoordExtractorApp
@@ -55,10 +57,10 @@ namespace CoordExtractorApp
                 lc.ReadFrom.Configuration(ctx.Configuration));
 
             //**AUTHENTICATION ME KEYCLOAK**            
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //ρυθμιση services και ρυθμιση middleware
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //ρυθμιση services και ρυθμιση middleware. 
                 .AddJwtBearer(options =>
                 {                    
-                    options.Authority = "http://localhost:8080/realms/TopoApp"; //ρύθμιση του keycloak server
+                    options.Authority = "http://localhost:8080/realms/TopoApp"; //ρύθμιση του keycloak server. κατεβαζει το αρχειο metadata στο endpoint. παιρνει τις διευθυνσεις για τα keys για την κρυπτογράφηση. Την επίσημη τιμή για τον Issuer. Γι αυτο δεν βάζω ValidIssuer
                     options.Audience = "react-app"; //ποιος χρησιμοποιεί το token                    
                     options.RequireHttpsMetadata = false; //για να αγνοήσει το https dev mode
                     
@@ -70,7 +72,7 @@ namespace CoordExtractorApp
 
                     options.Events = new JwtBearerEvents
                     {
-                        OnTokenValidated = KeycloakRoleExtensions.MapKeycloakRolesToClaims()
+                        OnTokenValidated = KeycloakRoleExtensions.MapKeycloakRolesToClaims() //ενω εχει επαληθευτεί το token και κάνει το mapping για να προσθέσει τους ρόλους στον claimsPrincipal
                     };
                 });
 
@@ -109,7 +111,22 @@ namespace CoordExtractorApp
 
 
 
-            builder.Services.AddControllers();
+            //με τη βιβλιοθηκη System.Text.Json μετατροπή των dto σε json πριν σταλουν στον client
+            //δεν θα τη χρησιμοποιήσω γιατι έχει προβλημα στα circular dependancies
+            //πχ αν προσπαθησω να μετατρέψω ενα project object σε json θα μπει σε λουπα project-projectuser-project-projectuser...κλπ
+            //builder.Services.AddControllers().AddJsonOptions(options =>
+            //{
+            //    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; 
+            //    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //τα enum θα φυγουν ως string και οχι ως αριθμοι
+            //});
+
+            builder.Services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore; //αν ενα πεδιο στο DTO είναι κενό να μην το βάλει
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize; //για να αντιμετωπίσει το προβλημα του circular
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
+            });
+           
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
 
@@ -141,7 +158,7 @@ namespace CoordExtractorApp
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoordExtractor App v1"));
             }
-
+            //προσοχή στο ordering
             app.UseHttpsRedirection();
 
             app.UseCors("LocalClient");
