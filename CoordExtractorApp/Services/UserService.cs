@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using CoordExtractorApp.Core.Enums;
 using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
@@ -122,37 +121,7 @@ namespace CoordExtractorApp.Services
             logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
             return dtoResult;
         }
-
-       
-
-        // Έλεγχος credentials και επιστροφή user για login
-        public async Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials)
-        {
-            User? user = null;
-            try
-            {
-                // Ψάχνουμε user με αυτό το username & password
-                user = await unitOfWork.UserRepository.GetUserAsync(credentials.Username!, credentials.Password!);
-
-                if (user == null)
-                {
-                    // Λάθος credentials = custom exception
-                    throw new EntityNotAuthorizedException("User", "Bad Credentials");
-
-                    //see Resources/ Strings.resx for localization
-                    //throw new EntityNotAuthorizedException("User", Resources.ErrorMessages.BadCredentials);
-                }
-                logger.LogInformation("User with username {Username} found", credentials.Username!);
-            }
-            catch (EntityNotAuthorizedException e)
-            {
-                // Log security event
-                logger.LogError("Authentication failed for username {Username}. {Message}",
-                    credentials.Username, e.Message);
-            }
-            return user;
-        }
-
+                   
 
         public async Task CreateUserAsync(UserCreateDTO request)
         {
@@ -244,5 +213,35 @@ namespace CoordExtractorApp.Services
 
 
         }
+
+
+
+        //// Έλεγχος credentials και επιστροφή user για login
+        //public async Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials)
+        //{
+        //    User? user = null;
+        //    try
+        //    {
+        //        // Ψάχνουμε user με αυτό το username & password
+        //        user = await unitOfWork.UserRepository.GetUserAsync(credentials.Username!, credentials.Password!);
+
+        //        if (user == null)
+        //        {
+        //            // Λάθος credentials = custom exception
+        //            throw new EntityNotAuthorizedException("User", "Bad Credentials");
+
+        //            //see Resources/ Strings.resx for localization
+        //            //throw new EntityNotAuthorizedException("User", Resources.ErrorMessages.BadCredentials);
+        //        }
+        //        logger.LogInformation("User with username {Username} found", credentials.Username!);
+        //    }
+        //    catch (EntityNotAuthorizedException e)
+        //    {
+        //        // Log security event
+        //        logger.LogError("Authentication failed for username {Username}. {Message}",
+        //            credentials.Username, e.Message);
+        //    }
+        //    return user;
+        //}
     }
 }

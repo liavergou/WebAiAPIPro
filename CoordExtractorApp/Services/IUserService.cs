@@ -8,7 +8,7 @@ namespace CoordExtractorApp.Services
     public interface IUserService
     {
 
-        Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials);
+        //Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials);
 
         Task<User?> GetUserByIdAsync(int id);
         Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username);
