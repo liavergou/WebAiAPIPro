@@ -6,7 +6,7 @@ namespace CoordExtractorApp.Repositories
 {
     public interface IUserRepository
     {
-        Task<User?> GetUserAsync(string username, string password);
+        Task<User?> GetUserByKeycloakIdAsync(Guid keykloakId);
 
         Task<User?> GetUserByUsernameAsync(string username);
 

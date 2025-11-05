@@ -4,10 +4,10 @@ namespace CoordExtractorApp.Data
 {
     public class User :BaseEntity
     {
-
+        public Guid KeycloakId { get; set; }
         public string Username { get; set; } = null!;
 
-        public string Password { get; set; } = null!;
+        //public string Password { get; set; } = null!;
 
         public string Lastname { get; set; } = null!;
 
@@ -15,7 +15,7 @@ namespace CoordExtractorApp.Data
 
         public string Email { get; set; } = null!;
 
-        public UserRole? UserRole { get; set; } = null!; // enum: Admin, Manager, Member)
+        //public UserRole? UserRole { get; set; } = null!; // enum: Admin, Manager, Member)
 
         public virtual ICollection<Project> Projects { get; set; } = new List<Project>(); //navigation property
 

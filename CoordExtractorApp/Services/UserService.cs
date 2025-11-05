@@ -49,7 +49,7 @@ namespace CoordExtractorApp.Services
         {
             try
             {
-                // ψάχνουμε user με αυτό το username & password.
+                // ψάχνουμε user με αυτό το username
                 // Έπόμενο βήμα να γίνει έλεγχος authorization.
                 User? user = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
                 if (user == null) //Λάθος credentials
@@ -59,7 +59,7 @@ namespace CoordExtractorApp.Services
                 }
 
                 logger.LogInformation("User found: {Username}", username);
-                // Επιστροφή DTO (όχι entity με password κλπ)
+                // Επιστροφή DTO
                 return new UserReadOnlyDTO
                 {
                     Id = user.Id,
@@ -67,7 +67,7 @@ namespace CoordExtractorApp.Services
                     Email = user.Email!,
                     Firstname = user.Firstname!,
                     Lastname = user.Lastname!,
-                    UserRole = user.UserRole.ToString()!
+                    //UserRole = user.UserRole.ToString()!
                 };
             }
             catch (EntityNotFoundException ex)
@@ -93,10 +93,10 @@ namespace CoordExtractorApp.Services
             }
 
 
-            if (!string.IsNullOrEmpty(userFiltersDTO.UserRole))
-            {
-                predicates.Add(u => u.UserRole.ToString() == userFiltersDTO.UserRole);
-            }
+            //if (!string.IsNullOrEmpty(userFiltersDTO.UserRole))
+            //{
+            //    predicates.Add(u => u.UserRole.ToString() == userFiltersDTO.UserRole);
+            //}
 
 
             var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, predicates);
@@ -112,7 +112,7 @@ namespace CoordExtractorApp.Services
                     Email = u.Email,
                     Firstname = u.Firstname,
                     Lastname = u.Lastname,
-                    UserRole = u.UserRole.ToString()!
+                    //UserRole = u.UserRole.ToString()!
                 }).ToList(),
                 TotalRecords = result.TotalRecords,
                 PageNumber = result.PageNumber,
@@ -137,10 +137,7 @@ namespace CoordExtractorApp.Services
                             existingUser.Username + " already exists");
                 }
 
-                user.Password = EncryptionUtil.Encrypt(user.Password);
-
                 await unitOfWork.UserRepository.AddAsync(user);
-
 
                 await unitOfWork.SaveAsync();
 
@@ -170,13 +167,8 @@ namespace CoordExtractorApp.Services
                 if (userupdatedto.Email != null) user.Email = userupdatedto.Email;
                 if (userupdatedto.Firstname != null) user.Firstname = userupdatedto.Firstname;
                 if (userupdatedto.Lastname != null) user.Lastname = userupdatedto.Lastname;
-                if (userupdatedto.UserRole != null) user.UserRole = userupdatedto.UserRole.Value;
-
-               
-                if (userupdatedto.Password != null)
-                {
-                    user.Password = EncryptionUtil.Encrypt(userupdatedto.Password);
-                }                                
+                //if (userupdatedto.UserRole != null) user.UserRole = userupdatedto.UserRole.Value;               
+                            
                 
                 await unitOfWork.SaveAsync();
 
@@ -215,33 +207,5 @@ namespace CoordExtractorApp.Services
         }
 
 
-
-        //// Έλεγχος credentials και επιστροφή user για login
-        //public async Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials)
-        //{
-        //    User? user = null;
-        //    try
-        //    {
-        //        // Ψάχνουμε user με αυτό το username & password
-        //        user = await unitOfWork.UserRepository.GetUserAsync(credentials.Username!, credentials.Password!);
-
-        //        if (user == null)
-        //        {
-        //            // Λάθος credentials = custom exception
-        //            throw new EntityNotAuthorizedException("User", "Bad Credentials");
-
-        //            //see Resources/ Strings.resx for localization
-        //            //throw new EntityNotAuthorizedException("User", Resources.ErrorMessages.BadCredentials);
-        //        }
-        //        logger.LogInformation("User with username {Username} found", credentials.Username!);
-        //    }
-        //    catch (EntityNotAuthorizedException e)
-        //    {
-        //        // Log security event
-        //        logger.LogError("Authentication failed for username {Username}. {Message}",
-        //            credentials.Username, e.Message);
-        //    }
-        //    return user;
-        //}
     }
 }

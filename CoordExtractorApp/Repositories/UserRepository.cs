@@ -12,13 +12,12 @@ namespace CoordExtractorApp.Repositories
         {
         }
 
-        public async Task<User?> GetUserAsync(string username, string password)
+        public async Task<User?> GetUserByKeycloakIdAsync(Guid keykloakId)
         {
            var user = await context.Users
-                .FirstOrDefaultAsync(u=> u.Username == username);
+                .FirstOrDefaultAsync(u=> u.KeycloakId == keykloakId);
 
-            if (user == null) return null;
-            if (!EncryptionUtil.IsValidPassword(password, user.Password)) return null;
+            if (user == null) return null;            
             return user;
         }
 

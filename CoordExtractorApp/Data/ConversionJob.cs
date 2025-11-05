@@ -6,7 +6,8 @@ namespace CoordExtractorApp.Data
 {
     public class ConversionJob : BaseEntity
     {
-      
+        //public int Id { get; set; }
+
         public string OriginalFileName { get; set; } = null!;
         //public string? CroppedFileName { get; set; } = null!;
 
@@ -32,6 +33,6 @@ namespace CoordExtractorApp.Data
         public virtual Project Project { get; set; } = null!;
 
              
-        //TODO ???? error απο το gemini
+        
     }
 }
