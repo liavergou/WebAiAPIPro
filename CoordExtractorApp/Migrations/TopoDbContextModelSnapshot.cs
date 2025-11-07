@@ -188,9 +188,10 @@ namespace CoordExtractorApp.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<Guid>("KeycloakId")
+                    b.Property<string>("KeycloakId")
+                        .IsRequired()
                         .HasMaxLength(36)
-                        .HasColumnType("uuid");
+                        .HasColumnType("character varying(36)");
 
                     b.Property<string>("Lastname")
                         .IsRequired()
