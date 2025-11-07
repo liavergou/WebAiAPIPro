@@ -48,6 +48,7 @@ namespace CoordExtractorApp
             builder.Services.AddRepositories();
 
             // Services (για το dependency injection)
+            builder.Services.AddScoped<IApplicationService, ApplicationService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPromptService, PromptService>();
 
@@ -56,26 +57,9 @@ namespace CoordExtractorApp
             builder.Host.UseSerilog((ctx, lc) =>
                 lc.ReadFrom.Configuration(ctx.Configuration));
 
-            //**AUTHENTICATION ME KEYCLOAK**            
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //ρυθμιση services και ρυθμιση middleware. 
-                .AddJwtBearer(options =>
-                {                    
-                    options.Authority = "http://localhost:8080/realms/TopoApp"; //ρύθμιση του keycloak server. κατεβαζει το αρχειο metadata στο endpoint. παιρνει τις διευθυνσεις για τα keys για την κρυπτογράφηση. Την επίσημη τιμή για τον Issuer. Γι αυτο δεν βάζω ValidIssuer
-                    options.Audience = "react-app"; //ποιος χρησιμοποιεί το token                    
-                    options.RequireHttpsMetadata = false; //για να αγνοήσει το https dev mode
-                    
-                    options.TokenValidationParameters = new TokenValidationParameters //ρύθμιση για την αναγνωση των roles
-                    {
-                        ValidateIssuer = true, //απενεργοποιεί τον έλεγχο του issuer γιατι το κανει το authority
-                        RoleClaimType = ClaimTypes.Role //πως να διαβάσει τους ρόλους απο το token.
-                    };
-
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnTokenValidated = KeycloakRoleExtensions.MapKeycloakRolesToClaims() //ενω εχει επαληθευτεί το token και κάνει το mapping για να προσθέσει τους ρόλους στον claimsPrincipal
-                    };
-                });
-
+            //**AUTHENTICATION ME KEYCLOAK**
+            builder.Services.AddKeycloakAuthentication(builder.Configuration); //προστεθηκε η AuthenticationDIExtensions για να απλοποιηθεί στο program 
+           
             //**CORS**
             builder.Services.AddCors(options =>
             {
@@ -98,28 +82,9 @@ namespace CoordExtractorApp
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                 );
-            });
+            });        
 
-            //builder.Services.AddCors(options =>
-            //{
-            //    options.AddPolicy("AllowAll",
-            //        b => b.AllowAnyOrigin()
-            //            .AllowAnyMethod()
-            //            .AllowAnyHeader()
-            //    );
-            //});
-
-
-
-            //με τη βιβλιοθηκη System.Text.Json μετατροπή των dto σε json πριν σταλουν στον client
-            //δεν θα τη χρησιμοποιήσω γιατι έχει προβλημα στα circular dependancies
-            //πχ αν προσπαθησω να μετατρέψω ενα project object σε json θα μπει σε λουπα project-projectuser-project-projectuser...κλπ
-            //builder.Services.AddControllers().AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; 
-            //    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //τα enum θα φυγουν ως string και οχι ως αριθμοι
-            //});
-
+            //μετατροπή των dto σε json πριν σταλουν στον client
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Include; //αν ενα πεδιο στο DTO είναι κενό να το βάλει
@@ -152,6 +117,7 @@ namespace CoordExtractorApp
             var app = builder.Build();
       
             // Configure the HTTP request pipeline.
+
 
             if (app.Environment.IsDevelopment())
             {

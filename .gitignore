@@ -366,3 +366,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /GENERATIVE_AI_README.md
 /installed_packages.txt
+/realm-export.json
