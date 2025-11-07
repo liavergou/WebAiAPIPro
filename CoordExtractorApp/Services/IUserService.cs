@@ -2,6 +2,7 @@
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Models;
+using System.Security.Claims;
 
 namespace CoordExtractorApp.Services
 {
@@ -21,6 +22,9 @@ namespace CoordExtractorApp.Services
         Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto);
 
         Task<bool> DeleteUserAsync(int id);
+
+        Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user); //αντί να ζητήσω το id απο τον controller προς το repo, θα το ζητήσει το service για να το παρει ο BaseController
+
 
 
 

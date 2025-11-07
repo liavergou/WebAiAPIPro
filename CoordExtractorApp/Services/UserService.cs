@@ -8,6 +8,7 @@ using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Security;
 using Serilog;
 using System.Linq.Expressions;
+using System.Security.Claims;
 
 namespace CoordExtractorApp.Services
 {
@@ -44,7 +45,7 @@ namespace CoordExtractorApp.Services
         }
 
 
-        // Αναζήτηση χρήστη με βάση το username
+        // GET USER BY USERNAME ASYNC Αναζήτηση χρήστη με βάση το username
         public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
         {
             try
@@ -78,6 +79,7 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        //GET PAGINATED USERS FILTERED ASYNC
         public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO)
         {
@@ -122,7 +124,7 @@ namespace CoordExtractorApp.Services
             return dtoResult;
         }
                    
-
+        //CREATE USER ASYNC
         public async Task CreateUserAsync(UserCreateDTO request)
         {
             User user = mapper.Map<User>(request);
@@ -150,7 +152,7 @@ namespace CoordExtractorApp.Services
             }
         }
                
-
+        //UPDATE USER ASYNC
         public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto)
         {
             try
@@ -182,6 +184,7 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        //DELETE USER ASYNC
         public async Task<bool> DeleteUserAsync(int id)
         {
             try
@@ -206,6 +209,62 @@ namespace CoordExtractorApp.Services
 
         }
 
+        //GET USER INFO ASYNC
+        public async Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user)
+        {
+            //έλεγχος null
+            if (user == null || user.Identity == null)
+            {
+                logger.LogError("No current User is availiable.");
+                throw new EntityNotAuthorizedException("User", "User has not identity");
+            }
+
+            //έλεγχος auth του token
+            if (user.Identity.IsAuthenticated != true)
+            {
+                logger.LogError("User is not authenticated");
+                throw new EntityNotAuthorizedException("User", "User is not authenticated");
+            }
+
+            var keycloakId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            //έλεγχος keycloakId
+            if (string.IsNullOrEmpty(keycloakId))
+
+            {
+                logger.LogError("KeycloakId not found in claims");
+                throw new EntityNotAuthorizedException("User", "Missing identifier key");
+
+            }
+
+
+            // αναζήτηση του user στη βάση με το KeycloakId που ήρθε 
+            var userDatabaseId = await unitOfWork.UserRepository.GetUserIdByKeycloakIdAsync(keycloakId);
+
+            if (userDatabaseId == null)
+            {
+                logger.LogError("User not found in claims");
+                throw new EntityNotAuthorizedException("User", "User is not authorized");
+
+            }
+
+            //φτιάχνει το DTO με τη μικτη πληροφορία από βάση και Keycloak
+            var applicationUser = new ApplicationUser
+            {
+                Id = userDatabaseId,
+                KeycloakId = keycloakId,
+                Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                Email = user.FindFirst(ClaimTypes.Email)?.Value,
+                Lastname = user.FindFirst(ClaimTypes.Surname)?.Value,
+                Firstname = user.FindFirst(ClaimTypes.GivenName)?.Value,
+                Role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Member" //απο το token. default τιμη Member
+            };
+
+
+            // Επιστρέφει το τελικό DTO με όλα τα δεδομένα
+            return applicationUser;
+        }
 
     }
+
 }

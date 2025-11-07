@@ -3,7 +3,7 @@ using CoordExtractorApp.Repositories;
 
 namespace CoordExtractorApp.Services
 {
-    public class ApplicationService
+    public class ApplicationService : IApplicationService
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;

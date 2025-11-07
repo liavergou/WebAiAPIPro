@@ -6,13 +6,15 @@ namespace CoordExtractorApp.Repositories
 {
     public interface IUserRepository
     {
-        Task<User?> GetUserByKeycloakIdAsync(Guid keykloakId);
+        Task<int?> GetUserIdByKeycloakIdAsync(string keykloakId);
 
         Task<User?> GetUserByUsernameAsync(string username);
 
         //με φίλτρα. παίρνει user δίνει bool
         Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,
            List<Expression<Func<User, bool>>> predicates);
+
+
 
 
 

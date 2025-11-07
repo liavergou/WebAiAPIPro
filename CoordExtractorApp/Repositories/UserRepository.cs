@@ -12,13 +12,14 @@ namespace CoordExtractorApp.Repositories
         {
         }
 
-        public async Task<User?> GetUserByKeycloakIdAsync(Guid keykloakId)
+        public async Task<int?> GetUserIdByKeycloakIdAsync(string keykloakId)
         {
            var user = await context.Users
-                .FirstOrDefaultAsync(u=> u.KeycloakId == keykloakId);
+                .FirstOrDefaultAsync(u=> u.KeycloakId == keykloakId); //προσοχή το KeycloakId ερχεται ως string απο το json
 
             if (user == null) return null;            
-            return user;
+            return user.Id;
+            //TODO//ΝΑ ΔΟΚΙΜΑΣΩ ΚΑΙ ΜΕ LINQ ΝΑ ΠΑΡΩ ΜΟΝΟ ID ΑΝ ΑΡΓΕΙ
         }
 
         public async Task<User?> GetUserByUsernameAsync(string username)
