@@ -6,6 +6,7 @@ namespace CoordExtractorApp.Helpers
 {
     public class ErrorHandlerMiddleware
     {
+        //αν ο controller δώσει exception θα επιστραφεί στον handler
         private readonly ILogger<ErrorHandlerMiddleware> logger = 
             new LoggerFactory().AddSerilog().CreateLogger<ErrorHandlerMiddleware>();
 
@@ -26,19 +27,19 @@ namespace CoordExtractorApp.Helpers
             {
                 var logContext = new
                 {
-                    ExceptionType = exception.GetType().Name,
-                    EndPoint = context.Request.Path,
-                    Method = context.Request.Method,
-                    User = context.User.Identity?.Name ?? "Anonymous",
-                    UserAgent = context.Request.Headers.UserAgent.ToString(),
-                    TraceId = context.TraceIdentifier
+                    ExceptionType = exception.GetType().Name, //όνομα του exception
+                    EndPoint = context.Request.Path, //ποιο endpoint κλήθηκε
+                    Method = context.Request.Method, //
+                    User = context.User.Identity?.Name ?? "Anonymous", //principal
+                    UserAgent = context.Request.Headers.UserAgent.ToString(), //o agent είναι ο browser
+                    TraceId = context.TraceIdentifier //μοναδικό id που μοναδικοποιεί τα request
                 };
 
                 logger.LogError("{ExceptionType} at {Endpoint} {Method} by {User} | Trace={TraceId}",
                     logContext.ExceptionType, logContext.EndPoint, logContext.Method, logContext.User, logContext.TraceId);
 
                 var response = context.Response;
-                response.ContentType = "application/json";
+                response.ContentType = "application/json"; //δηλωνουμε ότι στέλνουμε json πισω
 
                 response.StatusCode = exception switch
                 {                    
@@ -48,7 +49,7 @@ namespace CoordExtractorApp.Helpers
                     EntityNotFoundException => (int)HttpStatusCode.NotFound,        // 404
                     _ => (int)HttpStatusCode.InternalServerError,                     // 500    
                 };
-
+                //new {} είναι ανώνυμο object
                 var result = System.Text.Json.JsonSerializer.Serialize(new { code = response.StatusCode, message = exception?.Message });
                 await response.WriteAsync(result);
             }
