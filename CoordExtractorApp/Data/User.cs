@@ -4,7 +4,7 @@ namespace CoordExtractorApp.Data
 {
     public class User :BaseEntity
     {
-        public Guid KeycloakId { get; set; }
+        public string KeycloakId { get; set; } = null!;
         public string Username { get; set; } = null!;
 
         //public string Password { get; set; } = null!;
