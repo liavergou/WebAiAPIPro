@@ -61,28 +61,38 @@ namespace CoordExtractorApp
             builder.Services.AddKeycloakAuthentication(builder.Configuration); //προστεθηκε η AuthenticationDIExtensions για να απλοποιηθεί στο program 
            
             //**CORS**
+            //builder.Services.AddCors(options =>
+            //{
+            //    options.AddPolicy("ReactClient",
+            //        b => b.WithOrigins(
+            //            "http://localhost:5173",
+            //            "http://localhost:5174",
+            //            "http://localhost:5175",
+            //            "http://localhost:5176"
+            //            )
+            //            .AllowAnyMethod()
+            //            .AllowAnyHeader()
+            //    );
+            //});
+            //Μονο για Testing!!!
+            //builder.Services.AddCors(options =>
+            //{
+            //    options.AddPolicy("LocalClient",
+            //        b => b.WithOrigins("https://localhost:5001")
+            //            .AllowAnyMethod()
+            //            .AllowAnyHeader()
+            //    );
+            //});
+
+            // CORS Policy για Development - Επιτρέπει όλους (ΠΡΟΣΟΧΗ: Μόνο για testing!)
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("ReactClient",
-                    b => b.WithOrigins(
-                        "http://localhost:5173",
-                        "http://localhost:5174",
-                        "http://localhost:5175",
-                        "http://localhost:5176"
-                        )
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
+                options.AddPolicy("AllowAll",
+                    b => b.AllowAnyOrigin()   // Επιτρέπει ΟΛΟΥΣ (security risk σε production!)
+                          .AllowAnyMethod()   // GET, POST, PUT, DELETE κλπ
+                          .AllowAnyHeader()   // Όλα τα HTTP headers
                 );
             });
-            //Μονο για Testing!!!
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("LocalClient",
-                    b => b.WithOrigins("https://localhost:5001")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                );
-            });        
 
             //μετατροπή των dto σε json πριν σταλουν στον client
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
@@ -127,7 +137,7 @@ namespace CoordExtractorApp
             //προσοχή στο ordering
             app.UseHttpsRedirection();
 
-            app.UseCors("LocalClient");
+            app.UseCors("AllowAll");
 
             app.UseAuthentication();
 
