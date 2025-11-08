@@ -226,7 +226,8 @@ namespace CoordExtractorApp.Services
                 throw new EntityNotAuthorizedException("User", "User is not authenticated");
             }
 
-            var keycloakId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //λογω του custom mapper διορθωση σε map
+            var keycloakId = user.FindFirst("sub")?.Value;
 
             //έλεγχος keycloakId
             if (string.IsNullOrEmpty(keycloakId))
@@ -253,11 +254,11 @@ namespace CoordExtractorApp.Services
             {
                 Id = userDatabaseId,
                 KeycloakId = keycloakId,
-                Username = user.FindFirst(ClaimTypes.Name)?.Value,
-                Email = user.FindFirst(ClaimTypes.Email)?.Value,
-                Lastname = user.FindFirst(ClaimTypes.Surname)?.Value,
-                Firstname = user.FindFirst(ClaimTypes.GivenName)?.Value,
-                Role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Member" //απο το token. default τιμη Member
+                Username = user.FindFirst("preferred_username")?.Value,
+                Email = user.FindFirst("email")?.Value,
+                Lastname = user.FindFirst("family_name")?.Value,
+                Firstname = user.FindFirst("given_name")?.Value,
+                Role = user.FindFirst("role")?.Value ?? "Member" //απο το token. default τιμη Member
             };
 
 
