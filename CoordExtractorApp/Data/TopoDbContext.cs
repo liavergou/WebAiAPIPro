@@ -28,7 +28,7 @@ namespace CoordExtractorApp.Data
                 entity.Property(e => e.Email).HasMaxLength(100);                
                 entity.Property(e => e.Lastname).HasMaxLength(50);
                 entity.Property(e => e.Firstname).HasMaxLength(50);
-                //entity.Property(e => e.UserRole).HasMaxLength(20).HasConversion<string>();
+                entity.Property(e => e.Role).HasMaxLength(50);
                 entity.Property(e => e.InsertedAt)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
