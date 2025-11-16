@@ -28,8 +28,10 @@ namespace CoordExtractorApp.Helpers
                 // Add security requirement(προς το swagger). δημιουργουμε λίστα για να παρουμε τους ρολους
                 operation.Security = new List<OpenApiSecurityRequirement>();
 
-                var roles = context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>()
-                    .SelectMany(attr => attr.Roles!.Split(','));
+                var roles = context.MethodInfo.GetCustomAttributes(true)
+                    .OfType<AuthorizeAttribute>()
+                    .Where(attr => !string.IsNullOrEmpty(attr.Roles))
+                    .SelectMany(attr => attr.Roles!.Split(',')); //αλλαγή για να πάρει το [Authorize(Roles = "Admin,Manager")]
 
                 // Add the security requirment for JWT Bearer with specified roles
                 operation.Security.Add(new OpenApiSecurityRequirement
