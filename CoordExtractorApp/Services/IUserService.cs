@@ -17,7 +17,7 @@ namespace CoordExtractorApp.Services
         Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO);        
 
-        Task CreateUserAsync (UserCreateDTO request);
+        Task<User> CreateUserAsync (User user);
 
         Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto);
 
