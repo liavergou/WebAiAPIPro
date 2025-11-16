@@ -33,13 +33,18 @@ using Serilog;
 ﻿            try
 ﻿            {
 ﻿                user = await unitOfWork.UserRepository.GetAsync(id);
-﻿                logger.LogInformation("User found with ID: {Id}", id);
-﻿            }
-﻿            catch (EntityNotFoundException ex)
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", "User with id: {id} not found");
+                }
+                logger.LogInformation("User found with: {id}", id);
+                return user;
+
+            }catch (EntityNotFoundException ex)
 ﻿            {
 ﻿                logger.LogError("Error retrieving user by ID: {Id}. {Message}", id, ex.Message);
+                throw;
 ﻿            }
-﻿            return user;
 ﻿        }
 ﻿
 ﻿        public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
