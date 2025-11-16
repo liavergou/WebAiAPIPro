@@ -4,6 +4,7 @@ using CoordExtractorApp.Configuration;
 using CoordExtractorApp.Helpers;
 using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services;
+using CoordExtractorApp.Services.Keycloak;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,6 +52,8 @@ namespace CoordExtractorApp
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPromptService, PromptService>();
+            builder.Services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
+            builder.Services.AddScoped<IKeycloakAdminTokenService, KeycloakAdminTokenService>();
 
             // AutoMapper
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
@@ -122,6 +125,10 @@ namespace CoordExtractorApp
                 options.OperationFilter<AuthorizeOperationFilter>();
             });
 
+ 
+            //δήλωση HttpClient
+            builder.Services.AddHttpClient("KeycloakAdminClient");
+            
 
             //--------------------------------------------------------------
             var app = builder.Build();
