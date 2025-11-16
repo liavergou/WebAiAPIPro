@@ -4,19 +4,12 @@ using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Repositories
 {
-    public interface IUserRepository
+    public interface IUserRepository : IBaseRepository<User>
     {
-        Task<int?> GetUserIdByKeycloakIdAsync(string keykloakId);
-
         Task<User?> GetUserByUsernameAsync(string username);
+        Task<User?> GetUserByKeycloakIdAsync(string keycloakId);
 
-        //με φίλτρα. παίρνει user δίνει bool
-        Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,
-           List<Expression<Func<User, bool>>> predicates);
-
-
-
-
-
+        Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize, 
+            List<Expression<Func<User, bool>>> predicates);
     }
 }
