@@ -1,12 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using CoordExtractorApp.Core.Filters;
+using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.DTO.Keycloak;
-using CoordExtractorApp.Services;
-using CoordExtractorApp.Data;
 using CoordExtractorApp.Exceptions;
+using CoordExtractorApp.Models;
+using CoordExtractorApp.Services;
 using CoordExtractorApp.Services.Keycloak;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoordExtractorApp.Controllers
 {
@@ -14,14 +16,13 @@ namespace CoordExtractorApp.Controllers
     [Route("api/users")] // Base route: /api/users
     public class UserController : BaseController
     {
-        private readonly IKeycloakAdminService keycloakAdminService;
         private readonly IMapper mapper;
 
         //constructor
-        public UserController(IApplicationService applicationService,IKeycloakAdminService keycloakAdminService,IMapper mapper)
+        public UserController(IApplicationService applicationService,IMapper mapper)
             : base(applicationService)
         {
-            this.keycloakAdminService = keycloakAdminService;
+
             this.mapper = mapper;
         }
 
@@ -31,49 +32,13 @@ namespace CoordExtractorApp.Controllers
         [Authorize(Roles = "Admin,Manager")]
         [ProducesResponseType(typeof(UserReadOnlyDTO), 201)] //Success
         [ProducesResponseType(400)] //Bad Request
+        [ProducesResponseType(409)] //conflict όταν user exists
         [ProducesResponseType(500)] //Keycloak error
         public async Task<IActionResult> CreateUser([FromBody] UserCreateDTO userCreateDto)
         {
-            // DTO για το Keycloak API
-            var newkeycloakUser = new KeycloakUserDTO
-            {
-                Username = userCreateDto.Username,
-                Email = userCreateDto.Email,
-                FirstName = userCreateDto.Firstname,
-                LastName = userCreateDto.Lastname,
-                Credentials = new List<KeycloakCredentials>
-                {
-                    new KeycloakCredentials { Value = userCreateDto.Password! }
-                }
-            };
+            //business logic πήγε όλη στο service
 
-            //Create user στο Keycloak
-            string? keycloakId = await this.keycloakAdminService.CreateUserAsync(newkeycloakUser);
-
-            if (string.IsNullOrEmpty(keycloakId))
-            {
-                //σε περίπτωση σφάλματος->error να μη κανει user στη βαση
-                return StatusCode(500, "Error creating user in Keycloak");
-            }
-
-            //ανάθεση ρόλου
-            if (string.IsNullOrEmpty(userCreateDto.Role))
-            {
-                return BadRequest("Role is required");
-            }
-
-            bool roleAssigned = await this.keycloakAdminService.AssignUserRoleToUserAsync(keycloakId, userCreateDto.Role);
-
-            if (!roleAssigned)
-            {
-                await this.keycloakAdminService.DeleteUserAsync(keycloakId); //αν απετυχε το role να διαγαφεί ο user από το keycloak
-                return StatusCode(500, "Failed to assign role to user in Keycloak. User deleted");
-            }
-
-            //ενημέρωση βάσης
-            var userToSave = this.mapper.Map<User>(userCreateDto);
-            userToSave.KeycloakId = keycloakId; // Σύνδεση με Keycloak user
-            User newUser = await this.applicationService.UserService.CreateUserAsync(userToSave);
+            User newUser = await this.applicationService.UserService.CreateUserWithKeycloakAsync(userCreateDto);
 
             //δημιουργία του dto για το response
             var readOnlyDto = this.mapper.Map<UserReadOnlyDTO>(newUser);
@@ -90,16 +55,18 @@ namespace CoordExtractorApp.Controllers
         [ProducesResponseType(404)] // User not found
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateDTO userUpdateDto)
         {
-            try
+            //το error θα το πιασει το service και θα το χειριστει το middlwere
+            //Keycloak + Local DB μικτό από UpdateUserAsync
+            bool success = await applicationService.UserService.UpdateUserAsync(id, userUpdateDto);
+            if (!success)
             {
-                //Keycloak + Local DB μικτό από UpdateUserAsync
-                bool success = await applicationService.UserService.UpdateUserAsync(id, userUpdateDto);
+                return StatusCode(500, "Failed to update user in Keycloak.");
+
+            }
+
+                
                 return NoContent(); // 204 No Content
-            }
-            catch (EntityNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
+
         }
 
         //DELETE USER
@@ -110,8 +77,7 @@ namespace CoordExtractorApp.Controllers
         [ProducesResponseType(404)] //User not found
         public async Task<IActionResult> DeleteUser(int id)
         {
-            try
-            {
+         
                 // Keycloak-first delete: αν αποτύχει Keycloak → δεν διαγράφει local
                 bool success = await applicationService.UserService.DeleteUserAsync(id);
                 if (!success)
@@ -120,11 +86,7 @@ namespace CoordExtractorApp.Controllers
                     return StatusCode(500, "Failed to delete user from identity provider.");
                 }
                 return NoContent(); // 204 No Content
-            }
-            catch (EntityNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
+           
         }
 
         //GET USER BY ID
@@ -140,6 +102,41 @@ namespace CoordExtractorApp.Controllers
             // entity σε DTO
             var dto = this.mapper.Map<UserReadOnlyDTO>(user);
             return Ok(dto); //Success 200 OK
+        }
+
+        //GET ALL USERS
+        // GET /api/users
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
+        [ProducesResponseType(typeof(IEnumerable<UserReadOnlyDTO>), 200)]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await applicationService.UserService.GetAllUsersAsync();
+            return Ok(users);
+        }
+
+        //GET ALL USERS paginated
+        // GET /api/users?pageNumber=1&pageSize=10
+        [HttpGet("paginated")]
+        [Authorize(Roles = "Admin,Manager")]
+        [ProducesResponseType(typeof(PaginatedResult<UserReadOnlyDTO>), 200)]
+        public async Task<IActionResult> GetUsersPaginated(
+
+            [FromQuery] int? pageNumber,
+            [FromQuery] int? pageSize)
+
+            {
+            int page = pageNumber ?? 1;
+            int size = pageSize ?? 1;
+
+            //filters DTO κενό
+            var filters = new UserFiltersDTO();
+
+            //service με page 1 , pageSize 10 
+            var result = await applicationService.UserService.GetPaginatedUsersFilteredAsync(page, size, filters);
+
+            return Ok(result);
+            
         }
     }
 }
