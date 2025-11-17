@@ -142,7 +142,12 @@ namespace CoordExtractorApp
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoordExtractor App v1"));
             }
             //προσοχή στο ordering
-            app.UseHttpsRedirection();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+
+            }
+            
 
             app.UseCors("AllowAll");
 
