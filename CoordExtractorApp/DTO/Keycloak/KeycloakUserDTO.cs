@@ -20,5 +20,11 @@ namespace CoordExtractorApp.DTO.Keycloak
 
         [JsonPropertyName("credentials")]
         public List<KeycloakCredentials>? Credentials { get; set; }
+
+        [JsonPropertyName("emailVerified")]
+        public bool EmailVerified { get; set; } = true;
+
+
+
     }
 }
