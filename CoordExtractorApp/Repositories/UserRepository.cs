@@ -45,7 +45,7 @@ namespace CoordExtractorApp.Repositories
             int skip = (pageNumber - 1) * pageSize;
 
             var data = await query
-                .OrderBy(u => u.Id) // πάντα να υπάρχει ένα OrderBy πριν το Skip
+                .OrderBy(u => u.Username) // πάντα να υπάρχει ένα OrderBy πριν το Skip
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync(); // εκτελείται

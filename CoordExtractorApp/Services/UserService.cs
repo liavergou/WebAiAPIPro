@@ -2,15 +2,19 @@
 ﻿using CoordExtractorApp.Core.Filters;
 ﻿using CoordExtractorApp.Data;
 ﻿using CoordExtractorApp.DTO;
-﻿using CoordExtractorApp.Exceptions;
-﻿using CoordExtractorApp.Models;
+using CoordExtractorApp.DTO.Keycloak;
+using CoordExtractorApp.Exceptions;
+using CoordExtractorApp.Exceptions.keycloak;
+using CoordExtractorApp.Models;
 ﻿using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.Keycloak;
+using Keycloak.AuthServices.Common;
 using Serilog;
 ﻿using System.Linq.Expressions;
 ﻿using System.Security.Claims;
-﻿
-﻿namespace CoordExtractorApp.Services
+using KeycloakException = CoordExtractorApp.Exceptions.keycloak.KeycloakException;
+
+namespace CoordExtractorApp.Services
 ﻿{
 ﻿    public class UserService : IUserService
 ﻿    {
@@ -35,7 +39,7 @@ using Serilog;
 ﻿                user = await unitOfWork.UserRepository.GetAsync(id);
                 if (user == null)
                 {
-                    throw new EntityNotFoundException("User", "User with id: {id} not found");
+                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
                 }
                 logger.LogInformation("User found with: {id}", id);
                 return user;
@@ -65,8 +69,19 @@ using Serilog;
 ﻿                throw;
 ﻿            }
 ﻿        }
-﻿
-﻿        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize, 
+
+        public async Task<List<UserReadOnlyDTO>> GetAllUsersAsync()
+        {
+            var users = await unitOfWork.UserRepository.GetAllAsync();
+            var dto = mapper.Map<List<UserReadOnlyDTO>>(users)
+                .OrderBy(u => u.Username)
+                .ToList();
+            logger.LogInformation("Retrieved all users. Count: {Count}", dto.Count);
+            return dto;
+        }
+
+
+        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize, 
              UserFiltersDTO userFiltersDTO)
 ﻿        {
 ﻿            List<Expression<Func<User, bool>>> predicates = [];
@@ -146,7 +161,7 @@ using Serilog;
 ﻿                throw;
 ﻿            }
 ﻿        }
-﻿        
+﻿        //προβλημα σε αποτυχία διαγραφής από keycloak
 ﻿        public async Task<bool> DeleteUserAsync(int id)
 ﻿        {
 ﻿            try
@@ -213,7 +228,85 @@ using Serilog;
 ﻿            
 ﻿            return applicationUser;
 ﻿        }
-﻿    }
+
+        public async Task<User> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO)
+        {
+            try
+            {
+                //έλεγχος αν το username είναι κενό
+                if (string.IsNullOrEmpty(userCreateDTO.Username)){
+                    throw new InvalidArgumentException("Username", "Username is required");
+                }
+                
+                User? existingUser = await unitOfWork.UserRepository.GetUserByUsernameAsync(userCreateDTO.Username);
+                //έλεγχος αν το username υπάρχει ήδη στη βάση
+                if (existingUser != null)
+                {
+                    throw new EntityAlreadyExistsException("User", $"User with username '{existingUser.Username}' already exists.");
+
+                }
+
+                //αν δεν υπάρχει στη βάση τότε create user στο keycloak
+                var keycloakUserDTO = new KeycloakUserDTO
+                {
+                    Username = userCreateDTO.Username,
+                    Email = userCreateDTO.Email,
+                    LastName = userCreateDTO.Lastname,
+                    FirstName = userCreateDTO.Firstname,
+                    EmailVerified = true,
+                    Credentials = new List<KeycloakCredentials>
+                {
+                    new KeycloakCredentials {Value = userCreateDTO.Password!}
+                }
+                };
+
+                string? keycloakId = await keycloakAdminService.CreateUserAsync(keycloakUserDTO);
+                if (string.IsNullOrEmpty(keycloakId))
+                {
+                    logger.LogError("Failed to create user {Username} in Keycloak.", userCreateDTO.Username);
+                    throw new KeycloakException("Keycloak_error","Failed to create user in Keycloak");
+                }
+
+                //έλεγχος του role
+                if (string.IsNullOrEmpty(userCreateDTO.Role))
+                {
+                    throw new InvalidArgumentException("Role", "Role is required.");
+                }
+
+                //assign role στον user του keycloak
+                bool roleAssigned = await keycloakAdminService.AssignUserRoleToUserAsync(keycloakId, userCreateDTO.Role);
+                if (!roleAssigned)
+                {
+                    //αν αποτυχει τοτε πρέπει να διαγραφεί ο user απο το Keycloak
+                    await keycloakAdminService.DeleteUserAsync(keycloakId);
+                    logger.LogError("Failed to assign role to user {Username} in keycloak. User deleted from keycloak", userCreateDTO.Username);
+                    throw new KeycloakException("Keycloak_error", "Failed to assign role to user in keycloak");
+                }
+
+                //αν όλα οκ save τον user στο db
+                var dbSaveUser = mapper.Map<User>(userCreateDTO);
+                dbSaveUser.KeycloakId = keycloakId;
+
+                await unitOfWork.UserRepository.AddAsync(dbSaveUser);
+                await unitOfWork.SaveAsync();
+
+                logger.LogInformation("User with {Username} created succesfully in keycloak and db.", dbSaveUser.Username);
+                return dbSaveUser;
+            }catch (EntityAlreadyExistsException ex)
+            {
+                logger.LogError("Failed to create user: {Message}", ex.Message);
+                throw;
+            }
+            catch (KeycloakException ex)
+            {
+                logger.LogError("Keycloak service failed:{Message}", ex.Message);
+                throw;
+            } 
+
+        }
+
+        
+    }
 ﻿}
 ﻿
 ﻿

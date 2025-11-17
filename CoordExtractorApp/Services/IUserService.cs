@@ -14,10 +14,14 @@ namespace CoordExtractorApp.Services
         Task<User?> GetUserByIdAsync(int id);
         Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username);
 
+        Task<List<UserReadOnlyDTO>> GetAllUsersAsync();
+
         Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO);        
 
         Task<User> CreateUserAsync (User user);
+
+        Task<User> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO);
 
         Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto);
 
