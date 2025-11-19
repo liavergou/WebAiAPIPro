@@ -24,6 +24,9 @@ namespace CoordExtractorApp.DTO.Keycloak
         [JsonPropertyName("emailVerified")]
         public bool EmailVerified { get; set; } = true;
 
+        [JsonPropertyName("enabled")]
+        public bool Enabled { get; set; } = true;
+
 
 
     }
