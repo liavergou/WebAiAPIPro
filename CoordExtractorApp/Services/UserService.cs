@@ -31,7 +31,7 @@ namespace CoordExtractorApp.Services
 ﻿            this.keycloakAdminService = keycloakAdminService;
 ﻿        }
 ﻿
-﻿        public async Task<User?> GetUserByIdAsync(int id)
+﻿        public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
 ﻿        {
 ﻿            User? user = null;
 ﻿            try
@@ -41,8 +41,9 @@ namespace CoordExtractorApp.Services
                 {
                     throw new EntityNotFoundException("User", $"User with id: {id} not found");
                 }
+                var dto = mapper.Map<UserReadOnlyDTO>(user);
                 logger.LogInformation("User found with: {id}", id);
-                return user;
+                return dto;
 
             }catch (EntityNotFoundException ex)
 ﻿            {
@@ -108,27 +109,6 @@ namespace CoordExtractorApp.Services
 ﻿            return dtoResult;
 ﻿        }
 ﻿
-﻿        public async Task<User> CreateUserAsync(User user)
-﻿        {
-﻿            try
-﻿            {
-﻿                User? existingUser = await unitOfWork.UserRepository.GetUserByUsernameAsync(user.Username);
-﻿                if (existingUser != null)
-﻿                {
-﻿                    throw new EntityAlreadyExistsException("User", "User with username " + existingUser.Username + " already exists");
-﻿                }
-﻿                await unitOfWork.UserRepository.AddAsync(user);
-﻿                await unitOfWork.SaveAsync();
-﻿                logger.LogInformation("User {Username} signed up successfully.", user.Username);
-﻿                return user;
-﻿            }
-﻿            catch (EntityAlreadyExistsException ex)
-﻿            {
-﻿                logger.LogError("Error creating user {Username}. {Message}", user.Username, ex.Message);
-﻿                throw;
-﻿            }
-﻿        }
-﻿
 ﻿        public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userUpdateDto)
 ﻿        {
 ﻿            try
@@ -161,7 +141,7 @@ namespace CoordExtractorApp.Services
 ﻿                throw;
 ﻿            }
 ﻿        }
-﻿        //προβλημα σε αποτυχία διαγραφής από keycloak
+﻿        
 ﻿        public async Task<bool> DeleteUserAsync(int id)
 ﻿        {
 ﻿            try
@@ -229,7 +209,7 @@ namespace CoordExtractorApp.Services
 ﻿            return applicationUser;
 ﻿        }
 
-        public async Task<User> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO)
+        public async Task<UserReadOnlyDTO> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO)
         {
             try
             {
@@ -254,6 +234,7 @@ namespace CoordExtractorApp.Services
                     LastName = userCreateDTO.Lastname,
                     FirstName = userCreateDTO.Firstname,
                     EmailVerified = true,
+                    Enabled = true,
                     Credentials = new List<KeycloakCredentials>
                 {
                     new KeycloakCredentials {Value = userCreateDTO.Password!}
@@ -291,7 +272,10 @@ namespace CoordExtractorApp.Services
                 await unitOfWork.SaveAsync();
 
                 logger.LogInformation("User with {Username} created succesfully in keycloak and db.", dbSaveUser.Username);
-                return dbSaveUser;
+                var dto = mapper.Map<UserReadOnlyDTO>(dbSaveUser);
+
+                return dto;
+
             }catch (EntityAlreadyExistsException ex)
             {
                 logger.LogError("Failed to create user: {Message}", ex.Message);

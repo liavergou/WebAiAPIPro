@@ -16,14 +16,13 @@ namespace CoordExtractorApp.Controllers
     [Route("api/users")] // Base route: /api/users
     public class UserController : BaseController
     {
-        private readonly IMapper mapper;
+
 
         //constructor
-        public UserController(IApplicationService applicationService,IMapper mapper)
-            : base(applicationService)
+        public UserController(IApplicationService applicationService):
+            base(applicationService)
         {
-
-            this.mapper = mapper;
+            
         }
 
         //CREATE USER
@@ -36,15 +35,12 @@ namespace CoordExtractorApp.Controllers
         [ProducesResponseType(500)] //Keycloak error
         public async Task<IActionResult> CreateUser([FromBody] UserCreateDTO userCreateDto)
         {
-            //business logic πήγε όλη στο service
-
-            User newUser = await this.applicationService.UserService.CreateUserWithKeycloakAsync(userCreateDto);
-
-            //δημιουργία του dto για το response
-            var readOnlyDto = this.mapper.Map<UserReadOnlyDTO>(newUser);
+            //business logic πήγε όλη στο service. και το mapping επισης.
+            
+            var dto = await this.applicationService.UserService.CreateUserWithKeycloakAsync(userCreateDto);
 
             // 201 Created. το Id απο το newUser
-            return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, readOnlyDto);
+            return CreatedAtAction(nameof(GetUserById), new { id = dto.Id }, dto);
         }
 
         //UPDATE USERT
@@ -98,9 +94,7 @@ namespace CoordExtractorApp.Controllers
         public async Task<IActionResult> GetUserById(int id)
         {
             //Από Database
-            var user = await this.applicationService.UserService.GetUserByIdAsync(id);
-            // entity σε DTO
-            var dto = this.mapper.Map<UserReadOnlyDTO>(user);
+            var dto = await this.applicationService.UserService.GetUserByIdAsync(id);
             return Ok(dto); //Success 200 OK
         }
 
@@ -132,7 +126,7 @@ namespace CoordExtractorApp.Controllers
             //filters DTO κενό
             var filters = new UserFiltersDTO();
 
-            //service με page 1 , pageSize 10 
+            //service με page 1 , pageSize 10. φίλτρο ίσως αργότερα.
             var result = await applicationService.UserService.GetPaginatedUsersFilteredAsync(page, size, filters);
 
             return Ok(result);

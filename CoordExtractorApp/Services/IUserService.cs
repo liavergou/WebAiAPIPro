@@ -9,9 +9,7 @@ namespace CoordExtractorApp.Services
     public interface IUserService
     {
 
-        //Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials);
-
-        Task<User?> GetUserByIdAsync(int id);
+        Task<UserReadOnlyDTO?> GetUserByIdAsync(int id);
         Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username);
 
         Task<List<UserReadOnlyDTO>> GetAllUsersAsync();
@@ -19,19 +17,13 @@ namespace CoordExtractorApp.Services
         Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO);        
 
-        Task<User> CreateUserAsync (User user);
-
-        Task<User> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO);
+        Task<UserReadOnlyDTO> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO);
 
         Task<bool> UpdateUserAsync(int id, UserUpdateDTO userupdatedto);
 
         Task<bool> DeleteUserAsync(int id);
 
         Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user); //αντί να ζητήσω το id απο τον controller προς το repo, θα το ζητήσει το service για να το παρει ο BaseController
-
-
-
-
 
 
     }
