@@ -9,5 +9,7 @@
 
         public string PromptText { get; set; } = null!;
 
+        public virtual ICollection<ConversionJob> ConversionJobs { get; set; } = new List<ConversionJob>();
+
     }
 }
