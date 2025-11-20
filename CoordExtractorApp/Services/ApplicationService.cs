@@ -16,6 +16,11 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
             this.keycloakAdminService = keycloakAdminService;
         }
-        public UserService UserService => new(unitOfWork, mapper, keycloakAdminService);
+
+        public UserService UserService => new (unitOfWork,mapper, keycloakAdminService);
+
+        public ProjectService ProjectService => new (unitOfWork, mapper);
+
+        public PromptService PromptService => new (unitOfWork, mapper);
     }
 }
