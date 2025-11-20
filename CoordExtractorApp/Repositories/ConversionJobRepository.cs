@@ -23,6 +23,15 @@ namespace CoordExtractorApp.Repositories
 
         }
 
+        public async Task<List<ConversionJob>> GetJobsByPromptIdAsync(int promptId)
+        {
+           List<ConversionJob> jobs = await context.Prompts
+                .Where(p => p.Id == promptId)
+                .SelectMany(j => j.ConversionJobs)
+                .ToListAsync();
+            return jobs;
+        }
+
         public async Task<List<ConversionJob>> GetJobsByUserIdAsync(int userId)
         {
             List<ConversionJob> jobs = await context.Users

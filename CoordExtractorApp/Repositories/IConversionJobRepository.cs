@@ -11,6 +11,8 @@ namespace CoordExtractorApp.Repositories
 
         Task<List<ConversionJob>> GetJobsByProjectIdAsync(int projectId);
 
+        Task<List<ConversionJob>> GetJobsByPromptIdAsync(int projectId);
+
         Task<PaginatedResult<ConversionJob>>GetPaginatedJobsAsync(int pageNumber, int pageSize,
             List<Expression<Func<ConversionJob, bool>>> predicates);
     }
