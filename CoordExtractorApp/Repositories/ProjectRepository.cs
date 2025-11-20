@@ -21,8 +21,8 @@ namespace CoordExtractorApp.Repositories
             return project;
 
         }
-
-        public async Task<PaginatedResult<Project>> GetProjectsAsync(int pageNumber, int pageSize, List<Expression<Func<Project, bool>>> predicates)
+        
+        public async Task<PaginatedResult<Project>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, List<Expression<Func<Project, bool>>> predicates)
         {
             IQueryable<Project> query = context.Projects;
 
