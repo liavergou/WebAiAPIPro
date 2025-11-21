@@ -121,7 +121,7 @@ namespace CoordExtractorApp.Controllers
 
             {
             int page = pageNumber ?? 1;
-            int size = pageSize ?? 1;
+            int size = pageSize ?? 10;
 
             //filters DTO κενό
             var filters = new UserFiltersDTO();
