@@ -130,7 +130,7 @@ namespace CoordExtractorApp.Controllers
             var result = await applicationService.UserService.GetPaginatedUsersFilteredAsync(page, size, filters);
 
             return Ok(result);
-            
+
         }
     }
 }

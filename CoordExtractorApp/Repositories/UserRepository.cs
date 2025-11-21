@@ -1,6 +1,5 @@
 ﻿using CoordExtractorApp.Data;
 using CoordExtractorApp.Models;
-using CoordExtractorApp.Security;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

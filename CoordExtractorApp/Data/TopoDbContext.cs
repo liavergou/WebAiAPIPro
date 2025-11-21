@@ -108,7 +108,7 @@ namespace CoordExtractorApp.Data
                 .OnDelete(DeleteBehavior.Restrict); //αν διαγραφεί ο user να μην κανει cascade delete
 
                 entity.HasOne(e => e.Prompt)
-                .WithMany() //για να έχει πολλά Jobs              
+                .WithMany(p=> p.ConversionJobs) //για να έχει πολλά Jobs              
                 .OnDelete(DeleteBehavior.Restrict); //αν διαγραφεί το prompt να μην κανει cascade delete
 
                 entity.HasOne (e => e.Project)

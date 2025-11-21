@@ -151,8 +151,18 @@ namespace CoordExtractorApp.Services
 ﻿                {
 ﻿                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
 ﻿                }
-﻿
-﻿                bool keycloakDeleteSuccess = await keycloakAdminService.DeleteUserAsync(user.KeycloakId);
+
+                //ελεγχος για ύπαρξη related conversionJobs﻿. 403 forbidden
+                var jobs = await unitOfWork.ConversionJobRepository.GetJobsByUserIdAsync(user.Id);
+                if (jobs.Count > 0)
+                {
+                    throw new DeletionForbiddenException("User", $"User with id: {id} cannot be deleted. Connected with {jobs.Count} conversion jobs");
+
+                }
+                
+
+                //καλώ Admin service για διαγραφή. Ελεγχος αν διαφράφηκε στο keycloak
+                bool keycloakDeleteSuccess = await keycloakAdminService.DeleteUserAsync(user.KeycloakId);
 ﻿
 ﻿                if (!keycloakDeleteSuccess)
 ﻿                {
@@ -170,9 +180,15 @@ namespace CoordExtractorApp.Services
 ﻿            {
 ﻿                logger.LogError("Error deleting user {id}. {Message}", id, ex.Message);
 ﻿                throw;
-﻿            }
+﻿            }catch (DeletionForbiddenException ex)
+            {
+                logger.LogError("Error in deleting user {id}. {Message}", id, ex.Message);
+                throw;
+            }
+
 ﻿        }
 ﻿        
+        //μικτό profile για Base controller
 ﻿        public async Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user)
 ﻿        {
 ﻿            if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
