@@ -208,5 +208,4 @@ namespace CoordExtractorApp.Services.Keycloak
 
 
     }
-﻿}
-﻿
+}
