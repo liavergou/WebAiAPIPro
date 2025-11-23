@@ -8,13 +8,13 @@ namespace CoordExtractorApp.Services
     public interface IProjectService
     {
         //read
-        Task<ProjectReadOnlyDTO?> GetProjectByIdAsync(int id);
+        Task<ProjectDTO?> GetProjectByIdAsync(int id);
         Task<ProjectReadOnlyDTO?> GetProjectByProjectNameAsync(string projectName);
         Task<List<ProjectReadOnlyDTO>> GetAllProjectsAsync();
-        Task<PaginatedResult<ProjectReadOnlyDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize);        
+        Task<PaginatedResult<ProjectDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, ProjectFilterDTO projectFilterDTO);        
 
         //create
-        Task<ProjectReadOnlyDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO);
+        Task<ProjectDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO);
 
         //update
         Task<bool> UpdateProjectAsync(int id, ProjectUpdateDTO projectUpdateDTO);

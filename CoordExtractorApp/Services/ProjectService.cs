@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Exceptions;
@@ -22,7 +23,7 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
-        public async Task<ProjectReadOnlyDTO?> GetProjectByIdAsync(int id)
+        public async Task<ProjectDTO?> GetProjectByIdAsync(int id)
         {
             Project? project = null;
             try
@@ -35,7 +36,14 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("Project", "Project with id: " + id + " not found.");
                 }
                 logger.LogInformation("Project found with ID: {Id}", id);
-                var dto = mapper.Map<ProjectReadOnlyDTO>(project);
+
+                var dto = new ProjectDTO
+                {
+                    Id = project.Id,
+                    ProjectName = project.ProjectName,
+                    Description = project.Description,
+                    JobsCount = project.ConversionJobs.Count(),
+                };
 
                 return dto;
 
@@ -83,21 +91,34 @@ namespace CoordExtractorApp.Services
 
         }
 
-        public async Task<PaginatedResult<ProjectReadOnlyDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize)
+        public async Task<PaginatedResult<ProjectDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, ProjectFilterDTO projectFilterDTO)
         {
             try
             {
-                List<Expression<Func<Project, bool>>> predicates = [];
+                List<Project> projects = [];
 
-                var projects = await unitOfWork.ProjectRepository.GetPaginatedProjectsAsync(pageNumber, pageSize, predicates);
+                List<Expression<Func<Project, bool>>> predicates = [];        
 
-                var dto = new PaginatedResult<ProjectReadOnlyDTO>()
+                if (!string.IsNullOrEmpty(projectFilterDTO.ProjectName))
                 {
-                    //mapper
-                    Data = mapper.Map<List<ProjectReadOnlyDTO>>(projects.Data),
-                    TotalRecords = projects.TotalRecords,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize
+                    predicates.Add(p => p.ProjectName.Contains(projectFilterDTO.ProjectName));
+                }
+
+                var result = await unitOfWork.ProjectRepository.GetPaginatedProjectsAsync(pageNumber, pageSize, predicates);
+
+                var dto = new PaginatedResult<ProjectDTO>()
+                {
+                    Data = result.Data.Select (p => new ProjectDTO
+                    {
+                        Id = p.Id,
+                        ProjectName = p.ProjectName,
+                        Description = p.Description,
+                        JobsCount = p.ConversionJobs.Count,
+                    }).ToList(),
+
+                    TotalRecords = result.TotalRecords,
+                    PageNumber = result.PageNumber,
+                    PageSize = result.PageSize
                 };
                 logger.LogInformation("Retrieved {Count} Projects", dto.Data.Count);
                 return dto;
@@ -109,7 +130,7 @@ namespace CoordExtractorApp.Services
             }
         }
 
-        public async Task<ProjectReadOnlyDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO)
+        public async Task<ProjectDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO)
         {
             try
             {
@@ -128,7 +149,7 @@ namespace CoordExtractorApp.Services
                 await unitOfWork.SaveAsync(); //commit
 
                 //entity->dto
-                var dto = mapper.Map<ProjectReadOnlyDTO>(project);
+                var dto = mapper.Map<ProjectDTO>(project);
                 logger.LogInformation("Project with ID {id} created successfully", dto.Id);
                 return dto;
             }
@@ -200,7 +221,7 @@ namespace CoordExtractorApp.Services
                 //αν υπάρχουν conversion jobs συνδεδεμένα -> warning για cascade soft delete
                 var jobs = await unitOfWork.ConversionJobRepository.GetJobsByProjectIdAsync(id);
 
-                if (jobs.Any())
+                if (jobs.Count > 0)
                 {
                     logger.LogWarning("Project with {id} and {ProjectName} has {JobCount} jobs assigned. Cascading soft delete", id, project.ProjectName, jobs.Count);
                 }
