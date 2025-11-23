@@ -1,5 +1,6 @@
 ﻿using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.DTO;
+using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,14 +23,14 @@ namespace CoordExtractorApp.Controllers
         //POST /api/projects
         [HttpPost]
         [Authorize(Roles = "Admin, Manager")]
-        [ProducesResponseType(typeof(ProjectReadOnlyDTO), 201)] //success
+        [ProducesResponseType(typeof(ProjectDTO), 201)] //success
         [ProducesResponseType(400)]//Bad Request
         [ProducesResponseType(409)] //allready exists
 
         public async Task<IActionResult> CreateProject([FromBody] ProjectCreateDTO projectCreateDTO)
         {
-            ProjectReadOnlyDTO projectReadOnlyDTO = await applicationService.ProjectService.CreateProjectAsync(projectCreateDTO);
-            return CreatedAtAction(nameof(GetProjectById), new { id = projectReadOnlyDTO.Id }, projectReadOnlyDTO);
+            ProjectDTO projectDTO = await applicationService.ProjectService.CreateProjectAsync(projectCreateDTO);
+            return CreatedAtAction(nameof(GetProjectById), new { id = projectDTO.Id }, projectDTO);
         }
 
 
@@ -37,32 +38,47 @@ namespace CoordExtractorApp.Controllers
         //GET /api/projects/{id}
         [HttpGet("{id}")]
         [Authorize]
-        [ProducesResponseType(typeof(ProjectReadOnlyDTO), 200)] //Success 200 OK
+        [ProducesResponseType(typeof(ProjectDTO), 200)] //Success 200 OK
         [ProducesResponseType(404)] //Project not found
         public async Task<ActionResult> GetProjectById(int id)
         {
-            ProjectReadOnlyDTO? projectReadOnlyDTO = await applicationService.ProjectService.GetProjectByIdAsync(id);
-            return Ok(projectReadOnlyDTO);
+            ProjectDTO? projectDTO = await applicationService.ProjectService.GetProjectByIdAsync(id);
+            return Ok(projectDTO);
         }
 
-        //GET ALL PROJECTS paginated
-        // GET /api/projects?pageNumber=1&pageSize=10
-        [HttpGet("paginated")]
+        //GET ALL PROJECTS (για το drop down)
+        // GET /api/projects/all
+        [HttpGet("all")]
         [Authorize]
         [ProducesResponseType(typeof(ProjectReadOnlyDTO), 200)] //Success 200 OK
+        public async Task<IActionResult> GetAllProjects()
+        {
+            var projects = await applicationService.ProjectService.GetAllProjectsAsync();
+            return Ok(projects);
+        }
+
+
+        //GET ALL PROJECTS paginated για το management
+        // GET /api/projects?pageNumber=1&pageSize=10
+        [HttpGet]
+        [Authorize(Roles = "Admin, Manager")]
+        [ProducesResponseType(typeof(PaginatedResult<ProjectDTO>), 200)] //Success 200 OK
         [ProducesResponseType(404)] //Project not found
-        public async Task<ActionResult> GetProjectPaginated(
+        public async Task<IActionResult> GetProjectPaginated(
 
             [FromQuery] int? pageNumber,
-            [FromQuery] int? pageSize)
+            [FromQuery] int? pageSize,
+            [FromQuery] string? projectName)
+        
 
         {
+            var predicates = new ProjectFilterDTO { ProjectName = projectName };
             int page = pageNumber ?? 1;
             int size = pageSize ?? 10;
 
 
             //service με page 1 , pageSize 10. φίλτρο ίσως αργότερα.
-            var result = await applicationService.ProjectService.GetPaginatedProjectsAsync(page, size);
+            var result = await applicationService.ProjectService.GetPaginatedProjectsAsync(page, size, predicates);
 
             return Ok(result);
 
@@ -97,8 +113,12 @@ namespace CoordExtractorApp.Controllers
 
         public async Task<IActionResult> DeleteProject(int id)
         {
+            bool success = await applicationService.ProjectService.DeleteProjectAsync(id);
+            if (!success)
+            {
+                return StatusCode(500, "Failed to delete project");
 
-            await applicationService.ProjectService.DeleteProjectAsync(id);
+            }            
             
             return NoContent();
         }
