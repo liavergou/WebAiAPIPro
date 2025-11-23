@@ -1,4 +1,5 @@
 ﻿using CoordExtractorApp.Exceptions;
+using CoordExtractorApp.Exceptions.keycloak;
 using Serilog;
 using System.Net;
 
@@ -47,7 +48,11 @@ namespace CoordExtractorApp.Helpers
                     EntityNotAuthorizedException => (int)HttpStatusCode.Unauthorized,    // 401
                     EntityForbiddenException => (int)HttpStatusCode.Forbidden,          // 403
                     EntityNotFoundException => (int)HttpStatusCode.NotFound,        // 404
-                    _ => (int)HttpStatusCode.InternalServerError,                     // 500    
+                    InvalidArgumentException => (int)HttpStatusCode.BadRequest, //400
+                    DeletionForbiddenException => (int)HttpStatusCode.Forbidden, //403
+                    ServerException => (int)HttpStatusCode.InternalServerError,
+                    KeycloakException => (int)HttpStatusCode.Unauthorized, //401
+                    _ => (int)HttpStatusCode.InternalServerError,              // 500    
                 };
                 //new {} είναι ανώνυμο object
                 var result = System.Text.Json.JsonSerializer.Serialize(new { code = response.StatusCode, message = exception?.Message });
