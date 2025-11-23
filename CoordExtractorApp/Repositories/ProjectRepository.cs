@@ -24,7 +24,7 @@ namespace CoordExtractorApp.Repositories
         
         public async Task<PaginatedResult<Project>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, List<Expression<Func<Project, bool>>> predicates)
         {
-            IQueryable<Project> query = context.Projects;
+            IQueryable<Project> query = context.Projects.Include(p => p.ConversionJobs);
 
             if (predicates != null && predicates.Count > 0)
             {
