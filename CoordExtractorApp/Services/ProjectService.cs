@@ -141,6 +141,7 @@ namespace CoordExtractorApp.Services
                 }
 
                 //dto -> entity
+
                 var project = mapper.Map<Project>(projectCreateDTO);
 
 
@@ -149,7 +150,14 @@ namespace CoordExtractorApp.Services
                 await unitOfWork.SaveAsync(); //commit
 
                 //entity->dto
-                var dto = mapper.Map<ProjectDTO>(project);
+                var dto = new ProjectDTO
+                {
+                    Id = project.Id,
+                    ProjectName = project.ProjectName,
+                    Description = project.Description,
+                    JobsCount = 0 //0 για νεο project
+                };
+
                 logger.LogInformation("Project with ID {id} created successfully", dto.Id);
                 return dto;
             }
