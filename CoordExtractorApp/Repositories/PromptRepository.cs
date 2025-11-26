@@ -23,10 +23,18 @@ namespace CoordExtractorApp.Repositories
         }
 
 
-         public async Task<PaginatedResult<Prompt>> GetPaginatedPromptsAsync(int pageNumber, int pageSize)
+         public async Task<PaginatedResult<Prompt>> GetPaginatedPromptsAsync(int pageNumber, int pageSize, List<Expression<Func<Prompt, bool>>> predicates)
         {            
-            //χωρις φιλτρα οτι εχει μεσα
-            IQueryable<Prompt> query = context.Prompts;               
+            
+            IQueryable<Prompt> query = context.Prompts;
+
+            if (predicates != null && predicates.Count > 0)
+            {
+                foreach (var predicate in predicates)
+                {
+                    query = query.Where(predicate);
+                }
+            }
 
             int totalRecords = await query.CountAsync();
             var data = await query
@@ -45,5 +53,7 @@ namespace CoordExtractorApp.Repositories
 
             return result;
         }
+
+       
     }
 }

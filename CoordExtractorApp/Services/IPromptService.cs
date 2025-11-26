@@ -1,4 +1,5 @@
-﻿using CoordExtractorApp.DTO;
+﻿using CoordExtractorApp.Core.Filters;
+using CoordExtractorApp.DTO;
 using CoordExtractorApp.Models;
 
 namespace CoordExtractorApp.Services
@@ -10,7 +11,7 @@ namespace CoordExtractorApp.Services
         
         Task<PromptReadOnlyDTO?> GetPromptByPromptNameAsync(string promptName);
 
-        Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int page, int pageSize);
+        Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int page, int pageSize, PromptFilterDTO promptFilterDTO);
 
         Task<List<PromptReadOnlyDTO>> GetAllPromtsAsync();
 

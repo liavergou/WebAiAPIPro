@@ -83,28 +83,37 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
-        //χωρις φίλτρο
-        public async Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int pageNumber, int pageSize)
+        
+        public async Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int pageNumber, int pageSize,PromptFilterDTO promptFilterDTO)
         {
             try
-            {   //καλώ repository χωρις λιστα πλεον
-                var prompts = await unitOfWork.PromptRepository.GetPaginatedPromptsAsync(pageNumber, pageSize);
+            {
+                List<Project> prompts = [];
+                List<Expression<Func<Prompt, bool>>> predicates = [];
 
-                var result = new PaginatedResult<PromptReadOnlyDTO>
+                if (!string.IsNullOrEmpty(promptFilterDTO.PromptName))
+                {
+                    predicates.Add(p => p.PromptName.Contains(promptFilterDTO.PromptName));
+                }
+
+                var result = await unitOfWork.PromptRepository.GetPaginatedPromptsAsync(pageNumber, pageSize, predicates);
+
+                var dto = new PaginatedResult<PromptReadOnlyDTO>
                 {
                     //custom για εξασκηση
-                    Data = prompts.Data.Select(p => new PromptReadOnlyDTO
+                    Data = result.Data.Select(p => new PromptReadOnlyDTO
                     {
                         Id = p.Id,
                         PromptName = p.PromptName,
                         PromptText = p.PromptText
                     }).ToList(),
 
-                    TotalRecords = prompts.TotalRecords,
-                    PageNumber = prompts.PageNumber,
-                    PageSize = prompts.PageSize
+                    TotalRecords = result.TotalRecords,
+                    PageNumber = result.PageNumber,
+                    PageSize = result.PageSize
                 };
-                return result;
+                logger.LogInformation("Retrieved {Count} Prompts", dto.Data.Count);
+                return dto;
             }
             catch (EntityNotFoundException)
             {

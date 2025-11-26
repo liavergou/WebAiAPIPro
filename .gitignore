@@ -370,3 +370,5 @@ FodyWeavers.xsd
 /export_keycloak.bat
 /CoordExtractorApp/er.jpg
 /nul
+/CoordExtractorApp/storage/images
+/test_files
