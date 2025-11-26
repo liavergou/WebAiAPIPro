@@ -42,24 +42,39 @@ namespace CoordExtractorApp.Controllers
             return Ok(promptReadOnlyDTO);
         }
 
+        //GET ALL PROMPTS (μενου για χρήστη)
+        // GET /api/prompts/all
+        [HttpGet("all")]
+        [Authorize]
+        [ProducesResponseType(typeof(PromptReadOnlyDTO), 200)] //Success 200 OK
+        public async Task<IActionResult> GetAllProjects()
+        {
+            var prompts = await applicationService.PromptService.GetAllPromtsAsync();
+            return Ok(prompts);
+        }
+
+
+
         //GET ALL PROMPTS paginated
         // GET /api/prompts?pageNumber=1&pageSize=10
-        [HttpGet("paginated")]
-        [Authorize]
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")] // Μόνο Admin ή Manager
         [ProducesResponseType(typeof(PromptReadOnlyDTO), 200)] //Success 200 OK
         [ProducesResponseType(404)] //Prompt not found
         public async Task<ActionResult> GetPromptPaginated(
 
             [FromQuery] int? pageNumber,
-            [FromQuery] int? pageSize)
+            [FromQuery] int? pageSize,
+            [FromQuery] string? promptName)
 
         {
+            var predicates = new PromptFilterDTO { PromptName = promptName };
             int page = pageNumber ?? 1;
             int size = pageSize ?? 10;
 
 
             //service με page 1 , pageSize 10. φίλτρο ίσως αργότερα.
-            var result = await applicationService.PromptService.GetPaginatedPromptsAsync(page, size);
+            var result = await applicationService.PromptService.GetPaginatedPromptsAsync(page, size, predicates);
 
             return Ok(result);
 
