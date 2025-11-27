@@ -13,12 +13,17 @@ namespace CoordExtractorApp.Repositories
 
         public async Task<User?> GetUserByKeycloakIdAsync(string keycloakId)
         {
-           var user = await context.Users
-                .FirstOrDefaultAsync(u=> u.KeycloakId == keycloakId); //προσοχή το KeycloakId ερχεται ως string απο το json
+            var user = await context.Users
+                 .FirstOrDefaultAsync(u => u.KeycloakId == keycloakId); //προσοχή το KeycloakId ερχεται ως string απο το json
 
-            if (user == null) return null;            
+            if (user == null) return null;
             return user;
             //TODO//ΝΑ ΔΟΚΙΜΑΣΩ ΚΑΙ ΜΕ LINQ ΝΑ ΠΑΡΩ ΜΟΝΟ ID ΑΝ ΑΡΓΕΙ
+        }
+
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            return await context.Users.FindAsync(id);
         }
 
         public async Task<User?> GetUserByUsernameAsync(string username)
@@ -52,6 +57,39 @@ namespace CoordExtractorApp.Repositories
             return new PaginatedResult<User>(data, totalRecords, pageNumber, pageSize);
         }
 
+        //για να παρω τη λθστα με τα user-projects
+        public async Task<List<int>> GetProjectIdsForUserAsync(int id)
+        {
+            return await context.Users
+                .Where(u => u.Id == id) //για τον user με αυτο το id
+                .SelectMany(u => u.Projects.Select(p => p.Id)) //παιρνω τα projects απο το navigation property
+                .ToListAsync();
+        }
 
+        //για την ενημέρωση του user-projects
+        public async Task SetProjectsForUserAsync(int id, List<int> projectIds)
+        {
+            var user = await context.Users
+                .Include(u => u.Projects) //ο user με τα curent projects του
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                return;
+            }
+
+            var projects = await context.Projects
+                .Where(p => projectIds.Contains(p.Id)) //παιρνω όλα τα projects για τη λιστα των project ids απο front
+                .ToListAsync();
+
+            user.Projects.Clear(); //!!delete τις παλιες σχέσεις
+
+
+            foreach (var project in projects) //add τις νέες σχέσεις user-project
+            {
+                user.Projects.Add(project);
+            }
+
+        }
     }
-    }
+}
