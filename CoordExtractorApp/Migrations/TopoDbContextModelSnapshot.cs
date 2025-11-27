@@ -32,8 +32,15 @@ namespace CoordExtractorApp.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CroppedFileName")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
 
                     b.Property<Geometry>("Geom")
                         .HasColumnType("geometry(Polygon, 2100)");
@@ -51,10 +58,6 @@ namespace CoordExtractorApp.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("MongoImageFileId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
@@ -248,7 +251,7 @@ namespace CoordExtractorApp.Migrations
                         .IsRequired();
 
                     b.HasOne("CoordExtractorApp.Data.Prompt", "Prompt")
-                        .WithMany()
+                        .WithMany("ConversionJobs")
                         .HasForeignKey("PromptId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -282,6 +285,11 @@ namespace CoordExtractorApp.Migrations
                 });
 
             modelBuilder.Entity("CoordExtractorApp.Data.Project", b =>
+                {
+                    b.Navigation("ConversionJobs");
+                });
+
+            modelBuilder.Entity("CoordExtractorApp.Data.Prompt", b =>
                 {
                     b.Navigation("ConversionJobs");
                 });
