@@ -15,7 +15,7 @@ namespace CoordExtractorApp.Services
         private readonly ILogger<UserProjectsService> logger =
             new LoggerFactory().AddSerilog().CreateLogger<UserProjectsService>();
 
-        public UserProjectsService(IUnitOfWork unitOfWork,ILogger<UserProjectsService> logger)
+        public UserProjectsService(IUnitOfWork unitOfWork)
         {
             this.unitOfWork = unitOfWork;
         }

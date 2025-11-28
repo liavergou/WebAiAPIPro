@@ -1,5 +1,4 @@
 ﻿using CoordExtractorApp.Core.Filters;
-using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Models;
 using System.Security.Claims;
@@ -25,6 +24,6 @@ namespace CoordExtractorApp.Services
 
         Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user); //αντί να ζητήσω το id απο τον controller προς το repo, θα το ζητήσει το service για να το παρει ο BaseController
 
-
+        
     }
 }

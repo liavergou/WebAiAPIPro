@@ -42,7 +42,7 @@ namespace CoordExtractorApp.Services
                     Id = project.Id,
                     ProjectName = project.ProjectName,
                     Description = project.Description,
-                    JobsCount = project.ConversionJobs.Count(),
+                    JobsCount = project.ConversionJobs.Count,
                 };
 
                 return dto;
