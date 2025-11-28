@@ -22,7 +22,7 @@ namespace CoordExtractorApp.Controllers
         public UserController(IApplicationService applicationService):
             base(applicationService)
         {
-            
+
         }
 
         //CREATE USER
@@ -36,7 +36,7 @@ namespace CoordExtractorApp.Controllers
         public async Task<IActionResult> CreateUser([FromBody] UserCreateDTO userCreateDto)
         {
             //business logic πήγε όλη στο service. και το mapping επισης.
-            
+
             var dto = await this.applicationService.UserService.CreateUserWithKeycloakAsync(userCreateDto);
 
             // 201 Created. το Id απο το newUser
@@ -60,8 +60,8 @@ namespace CoordExtractorApp.Controllers
 
             }
 
-                
-                return NoContent(); // 204 No Content
+
+            return NoContent(); // 204 No Content
 
         }
 
@@ -73,16 +73,16 @@ namespace CoordExtractorApp.Controllers
         [ProducesResponseType(404)] //User not found
         public async Task<IActionResult> DeleteUser(int id)
         {
-         
-                // Keycloak-first delete: αν αποτύχει Keycloak → δεν διαγράφει local
-                bool success = await applicationService.UserService.DeleteUserAsync(id);
-                if (!success)
-                {
-                    // αν αποτύχει το Keycloak delete
-                    return StatusCode(500, "Failed to delete user from identity provider.");
-                }
-                return NoContent(); // 204 No Content
-           
+
+            // Keycloak-first delete: αν αποτύχει Keycloak → δεν διαγράφει local
+            bool success = await applicationService.UserService.DeleteUserAsync(id);
+            if (!success)
+            {
+                // αν αποτύχει το Keycloak delete
+                return StatusCode(500, "Failed to delete user from identity provider.");
+            }
+            return NoContent(); // 204 No Content
+
         }
 
         //GET USER BY ID
@@ -119,7 +119,7 @@ namespace CoordExtractorApp.Controllers
             [FromQuery] int? pageNumber,
             [FromQuery] int? pageSize)
 
-            {
+        {
             int page = pageNumber ?? 1;
             int size = pageSize ?? 10;
 
@@ -131,6 +131,31 @@ namespace CoordExtractorApp.Controllers
 
             return Ok(result);
 
+        }
+
+        //GET PROJECTS BY USER ID
+        // GET /api/users/{id}/projects
+        [HttpGet("{id}/projects")]
+        [Authorize(Roles = "Admin,Manager")]
+        [ProducesResponseType(typeof(UserProjectsDTO), 200)]
+        [ProducesResponseType(404)]//User not found
+        public async Task<IActionResult> GetUserProjects(int id)
+        {
+            var dto = await applicationService.UserProjectsService.GetUserProjectsAsync(id);
+            return Ok(dto);
+        }
+
+        //UPDATE USERPROJECTS
+        //PUT /api/users/{id}/projects
+        [HttpPut("{id}/projects")]
+        [Authorize(Roles = "Admin,Manager")]
+        [ProducesResponseType(typeof(UserProjectsDTO), 200)]//με dto
+        [ProducesResponseType(404)]//User not found
+        public async Task<IActionResult> UpdateUserProjects(int id, [FromBody]UserProjectsUpdateDTO dto)
+        {
+
+            var updatedDto= await applicationService.UserProjectsService.UpdateUserProjectsAsync(id,dto);
+            return Ok(updatedDto);
         }
     }
 }
