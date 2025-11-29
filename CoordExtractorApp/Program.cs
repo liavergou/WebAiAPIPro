@@ -4,6 +4,7 @@ using CoordExtractorApp.Configuration;
 using CoordExtractorApp.Helpers;
 using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services;
+using CoordExtractorApp.Services.GenerativeAI;
 using CoordExtractorApp.Services.Keycloak;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,11 @@ namespace CoordExtractorApp
             builder.Services.AddScoped<IPromptService, PromptService>();
             builder.Services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
             builder.Services.AddScoped<IKeycloakAdminTokenService, KeycloakAdminTokenService>();
+            builder.Services.AddScoped<IGenerativeAIService, GenerativeAIService>();
+            builder.Services.AddScoped<IProjectService, ProjectService>();
+            builder.Services.AddScoped<IConversionJobService, ConversionJobService>();
+            builder.Services.AddScoped<IUserProjectsService, UserProjectsService > ();
+
 
             // AutoMapper
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());

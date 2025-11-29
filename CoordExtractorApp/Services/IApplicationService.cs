@@ -2,10 +2,17 @@
 {
     public interface IApplicationService
     {
-        UserService UserService { get; }
-        ProjectService ProjectService { get; }
-        PromptService PromptService { get; }
-        // Other services can be added here as needed
+        IUserService UserService { get; }
+        IProjectService ProjectService { get; }
+        IPromptService PromptService { get; }
+
+        IUserProjectsService UserProjectsService { get; }
+
+        IConversionJobService ConversionJobService { get; }
+
+        
+        
+
 
     }
 }
