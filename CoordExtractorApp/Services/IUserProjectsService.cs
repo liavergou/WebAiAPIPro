@@ -7,5 +7,7 @@ namespace CoordExtractorApp.Services
         Task<UserProjectsDTO> GetUserProjectsAsync(int id); //να επιστρέψει τη λίστα με τα ids των project απο τη βάση
 
         Task <UserProjectsDTO> UpdateUserProjectsAsync(int id, UserProjectsUpdateDTO dto);
+
+        Task<List<ProjectReadOnlyDTO>> GetUserProjectsByUserIdAsync(int id);
     }
 }

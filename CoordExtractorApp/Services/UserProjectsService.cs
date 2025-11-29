@@ -12,12 +12,14 @@ namespace CoordExtractorApp.Services
     public class UserProjectsService : IUserProjectsService
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IMapper mapper;
         private readonly ILogger<UserProjectsService> logger =
             new LoggerFactory().AddSerilog().CreateLogger<UserProjectsService>();
 
-        public UserProjectsService(IUnitOfWork unitOfWork)
+        public UserProjectsService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
+            this.mapper = mapper;
         }
 
         public async Task<UserProjectsDTO>GetUserProjectsAsync(int id)
@@ -47,7 +49,24 @@ namespace CoordExtractorApp.Services
                 throw;
             }        
         }
- 
+
+        public async Task<List<ProjectReadOnlyDTO>> GetUserProjectsByUserIdAsync(int id)
+        {
+            var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(id);
+            if (assignedProjectIds == null)
+            {
+                return [];
+            }
+
+            var projects = await unitOfWork.ProjectRepository.GetProjectsByIdsAsync(assignedProjectIds);
+
+            var dto = mapper.Map<List<ProjectReadOnlyDTO>>(projects);
+
+            logger.LogInformation("Retrieved {Count} projects for user {id}", id, assignedProjectIds.Count);
+
+            return dto;
+        }
+
         public async Task<UserProjectsDTO> UpdateUserProjectsAsync(int id, UserProjectsUpdateDTO dto)
         {
             try
