@@ -19,8 +19,6 @@ namespace CoordExtractorApp.Services
     public class ConversionJobService : IConversionJobService
     {
 
-        //https://postgis.net/workshops/postgis-intro/geometries.html SELECT name, ST_AsText(geom) FROM geometries;
-
         private readonly IUnitOfWork unitOfWork;
         private readonly IConfiguration configuration;
         private readonly IGenerativeAIService generativeAIService;
@@ -130,6 +128,7 @@ namespace CoordExtractorApp.Services
             logger.LogInformation("Job {JobId} saved with final status: {Status}", newJob.Id, newJob.Status);
 
             //mapping για επιστροφή response
+            //https://postgis.net/workshops/postgis-intro/geometries.html SELECT name, ST_AsText(geom) FROM geometries;
             var responseDto = new ConversionJobReadOnlyDTO
             {
                 Id = newJob.Id,
@@ -137,7 +136,9 @@ namespace CoordExtractorApp.Services
                 CroppedFileName = newJob.CroppedFileName,
                 ModelUsed = newJob.ModelUsed,
                 Status = newJob.Status,
+                Wkt = newJob.Geom?.AsText(),
                 ErrorMessage = newJob.ErrorMessage
+                
             };
 
             // μετατροπή geometry σε σημεία

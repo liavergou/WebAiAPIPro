@@ -12,6 +12,7 @@ namespace CoordExtractorApp.DTO
         public string? CroppedFileName { get; set; }
         public string? ModelUsed { get; set; }
         public List<CoordinateDTO> Coordinates { get; set; } = new();
+        public string? Wkt { get; set; } //temporary
         public JobStatus Status { get; set; } = JobStatus.Pending;
         public string? ErrorMessage { get; set; }
 
