@@ -51,5 +51,12 @@ namespace CoordExtractorApp.Repositories
 
             return result;
         }
+
+        public async Task<List<Project>> GetProjectsByIdsAsync(List<int> ids)
+        {
+            return await context.Projects
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+        }
     }
 }
