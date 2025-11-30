@@ -46,10 +46,10 @@ namespace CoordExtractorApp.Controllers
             return Ok(projectDTO);
         }
 
-        //GET ALL PROJECTS (για το drop down)
+        //GET ALL PROJECTS (για τα project cards, μόνο admin manager. οι member θα το παρουν απο το userProject controller)
         // GET /api/projects/all
         [HttpGet("all")]
-        [Authorize]
+        [Authorize(Roles = "Admin, Manager")]
         [ProducesResponseType(typeof(ProjectReadOnlyDTO), 200)] //Success 200 OK
         public async Task<IActionResult> GetAllProjects()
         {
