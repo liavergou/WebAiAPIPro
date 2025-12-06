@@ -89,12 +89,7 @@ namespace CoordExtractorApp.Controllers
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] PromptUpdateDTO promptUpdateDto)
         {
 
-            bool success = await applicationService.PromptService.UpdatePromptAsync(id, promptUpdateDto);
-            if (!success)
-            {
-                return StatusCode(500, "Failed to update prompt");
-
-            }
+            await applicationService.PromptService.UpdatePromptAsync(id, promptUpdateDto);
 
             return NoContent(); // 204 No Content
 

@@ -1,4 +1,3 @@
-using AutoMapper;
 using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
@@ -52,15 +51,9 @@ namespace CoordExtractorApp.Controllers
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateDTO userUpdateDto)
         {
             //το error θα το πιασει το service και θα το χειριστει το middlwere
-            //Keycloak + Local DB μικτό από UpdateUserAsync
-            bool success = await applicationService.UserService.UpdateUserAsync(id, userUpdateDto);
-            if (!success)
-            {
-                return StatusCode(500, "Failed to update user in Keycloak.");
-
-            }
-
-
+            //Keycloak + Local DB μικτό από UpdateUserAsync            
+            await applicationService.UserService.UpdateUserAsync(id, userUpdateDto);
+            
             return NoContent(); // 204 No Content
 
         }
@@ -75,12 +68,8 @@ namespace CoordExtractorApp.Controllers
         {
 
             // Keycloak-first delete: αν αποτύχει Keycloak → δεν διαγράφει local
-            bool success = await applicationService.UserService.DeleteUserAsync(id);
-            if (!success)
-            {
-                // αν αποτύχει το Keycloak delete
-                return StatusCode(500, "Failed to delete user from identity provider.");
-            }
+            await applicationService.UserService.DeleteUserAsync(id);
+            
             return NoContent(); // 204 No Content
 
         }

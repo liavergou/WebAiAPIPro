@@ -2,6 +2,7 @@
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CoordExtractorApp.Exceptions;
 
 namespace CoordExtractorApp.Controllers
 {
@@ -26,10 +27,7 @@ namespace CoordExtractorApp.Controllers
             //Ο user που συνδέεται με το conversion job
             var user = await GetUserInfoAsync(); //(base) για τον current user
 
-            if (user.Id == null)
-            {
-                return StatusCode(401, "User is null");
-            }
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
 
             var projects = await applicationService.UserProjectsService.GetUserProjectsByUserIdAsync(user.Id.Value);
             
