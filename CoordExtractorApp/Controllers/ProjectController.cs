@@ -93,12 +93,7 @@ namespace CoordExtractorApp.Controllers
         public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectUpdateDTO projectUpdateDto)
         {
 
-            bool success = await applicationService.ProjectService.UpdateProjectAsync(id, projectUpdateDto);
-            if (!success)
-            {
-                return StatusCode(500, "Failed to update project");
-
-            }
+            await applicationService.ProjectService.UpdateProjectAsync(id, projectUpdateDto);
 
             return NoContent(); // 204 No Content
 
@@ -113,12 +108,7 @@ namespace CoordExtractorApp.Controllers
 
         public async Task<IActionResult> DeleteProject(int id)
         {
-            bool success = await applicationService.ProjectService.DeleteProjectAsync(id);
-            if (!success)
-            {
-                return StatusCode(500, "Failed to delete project");
-
-            }            
+           await applicationService.ProjectService.DeleteProjectAsync(id);
             
             return NoContent();
         }
