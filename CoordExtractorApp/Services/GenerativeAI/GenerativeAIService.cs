@@ -61,7 +61,7 @@ namespace CoordExtractorApp.Services.GenerativeAI
 
             //***** PROMPT TEXT KAI EIKONA GIA TO REQUEST. ΔΗΜΙΟΥΡΓΙΑ ΤΩΝ PARTS
             //https://gunpal5.github.io/generative-ai/html/c26d5035-f439-24ad-0804-09da2c89e445.htm
-            https://gunpal5.github.io/generative-ai/html/d31a5a25-a65b-d8ae-dee8-bc6e3bd84400.htm
+            //https://gunpal5.github.io/generative-ai/html/d31a5a25-a65b-d8ae-dee8-bc6e3bd84400.htm
 
                 var textPart = new Part { Text = promptText };
 
