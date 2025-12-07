@@ -1,4 +1,6 @@
-﻿namespace CoordExtractorApp.Services
+﻿using CoordExtractorApp.Services.Geoserver;
+
+namespace CoordExtractorApp.Services
 {
     public interface IApplicationService
     {
@@ -9,6 +11,8 @@
         IUserProjectsService UserProjectsService { get; }
 
         IConversionJobService ConversionJobService { get; }
+
+        IGeoserverService GeoserverService { get; }
 
         
         
