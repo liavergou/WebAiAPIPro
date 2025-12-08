@@ -112,6 +112,21 @@ namespace CoordExtractorApp.Controllers
             
             return NoContent();
         }
+        
+
+        //GET GEOSERVER JOBS GEOJSON BY PROJECT ID
+        //GET /api/projects/{id}/jobs
+        [HttpGet("{id}/jobs")]
+        [Authorize(Roles = "Admin, Manager")]
+
+        public async Task<IActionResult> GetProjectGeoserverJobs(int id)
+        {
+            var user = await GetUserInfoAsync();
+
+            string geoJson = await applicationService.GeoserverService.GetProjectJobsGeoserverAsync(id, user.Username, user.Role);
+
+            return Content(geoJson, "application/json");
+        }
 
 
     }
