@@ -1,10 +1,10 @@
-
 using Azure.Identity;
 using CoordExtractorApp.Configuration;
 using CoordExtractorApp.Helpers;
 using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services;
 using CoordExtractorApp.Services.GenerativeAI;
+using CoordExtractorApp.Services.Geoserver;
 using CoordExtractorApp.Services.Keycloak;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +59,7 @@ namespace CoordExtractorApp
             builder.Services.AddScoped<IProjectService, ProjectService>();
             builder.Services.AddScoped<IConversionJobService, ConversionJobService>();
             builder.Services.AddScoped<IUserProjectsService, UserProjectsService > ();
+            builder.Services.AddScoped<IGeoserverService, GeoserverService > ();
 
 
             // AutoMapper
