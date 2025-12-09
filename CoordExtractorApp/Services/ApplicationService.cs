@@ -13,16 +13,16 @@ namespace CoordExtractorApp.Services
         private readonly IKeycloakAdminService keycloakAdminService;
         private readonly IConfiguration configuration;
         private readonly IGenerativeAIService generativeAIService;
-        private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public ApplicationService(IUnitOfWork unitOfWork, IMapper mapper, IKeycloakAdminService keycloakAdminService, IConfiguration configuration, IGenerativeAIService generativeAIService,HttpClient httpClient)
+        public ApplicationService(IUnitOfWork unitOfWork, IMapper mapper, IKeycloakAdminService keycloakAdminService, IConfiguration configuration, IGenerativeAIService generativeAIService, IHttpClientFactory httpClientFactory)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
             this.keycloakAdminService = keycloakAdminService;
             this.configuration = configuration;
             this.generativeAIService = generativeAIService;
-            this.httpClient = httpClient;
+            this.httpClientFactory = httpClientFactory;
 
         }
 
@@ -40,6 +40,6 @@ namespace CoordExtractorApp.Services
                 PromptService
             );
 
-        public IGeoserverService GeoserverService => new GeoserverService(httpClient,configuration);
+        public IGeoserverService GeoserverService => new GeoserverService(httpClientFactory,configuration);
     }
 }

@@ -5,14 +5,14 @@ namespace CoordExtractorApp.Services.Geoserver
 {
     public class GeoserverService : IGeoserverService
     {
-        private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory; //διαχειριστής του pool με τις available συνδέσεις (connection pooling).
         private readonly IConfiguration configuration;
         private readonly ILogger<GeoserverService> logger =
            new LoggerFactory().AddSerilog().CreateLogger<GeoserverService>();
 
-        public GeoserverService(HttpClient httpClient, IConfiguration configuration)
+        public GeoserverService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            this.httpClient = httpClient;
+            this.httpClientFactory = httpClientFactory;
             this.configuration = configuration;
         }
 
@@ -28,22 +28,25 @@ namespace CoordExtractorApp.Services.Geoserver
             //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobs&outputFormat=application/json&srsName=EPSG:4326 + το φίλτρο
             string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=application/json&srsName=EPSG:4326&cql_filter={encodedCqlFilter}";
 
+            //διορθωση σε δημιουργία client instance απο το factory για καθε request. δεν ήταν σωστό να χρησιμοποιώ τον ίδιο HttpClient. πιθανό Mix στα credentials σε δδιαφορετικές κλήσεις
+            var client = this.httpClientFactory.CreateClient("GeoserverClient");
 
             try
             {
+
                 //ελεγχος να υπάρχει username role
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
                 {
                     throw new EntityNotAuthorizedException("Geoserver", "User and role not found.Cannot authenticate");
                 }
                 //προσθήκη στο header
-                httpClient.DefaultRequestHeaders.Add("Keycloak-User", username);
-                httpClient.DefaultRequestHeaders.Add("Keycloak-Role", role);
+                client.DefaultRequestHeaders.Add("Keycloak-User", username);
+                client.DefaultRequestHeaders.Add("Keycloak-Role", role);
 
                 logger.LogInformation("Fetching data from GeoServer url: {Url}", url);
 
 
-                var response = await httpClient.GetAsync(url);
+                var response = await client.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
                 {

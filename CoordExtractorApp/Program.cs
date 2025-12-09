@@ -133,8 +133,9 @@ namespace CoordExtractorApp
             });
 
  
-            //δήλωση HttpClient
+            //δήλωση HttpClient (keycloak Και geoserver)
             builder.Services.AddHttpClient("KeycloakAdminClient");
+            builder.Services.AddHttpClient("GeoserverClient");
             
 
             //--------------------------------------------------------------
