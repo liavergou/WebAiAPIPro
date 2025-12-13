@@ -28,7 +28,9 @@ namespace CoordExtractorApp.Repositories
 
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await context.Users
+                .IgnoreQueryFilters() ////https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10 disabling filters Για check existing στο create update
+                .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,
