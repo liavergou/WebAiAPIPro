@@ -15,6 +15,7 @@ namespace CoordExtractorApp.Repositories
         public async Task<Prompt?> GetPromptByPromptNameAsync(string promptName)
         {
             var prompt = await context.Prompts
+                .IgnoreQueryFilters() ////https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10 disabling filters Για check existing στο create update
                 .FirstOrDefaultAsync(p => p.PromptName == promptName);
             if (prompt == null) return null;
 
