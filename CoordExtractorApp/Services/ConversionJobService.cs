@@ -40,8 +40,30 @@ namespace CoordExtractorApp.Services
         {
             logger.LogInformation("START CONVERSION: Job creation and processing for user {UserId}", userId);
 
+            //fix project and user role check
+            var projectExists = await unitOfWork.ProjectRepository.GetAsync(dto.ProjectId);
+            if (projectExists == null)
+            {
+                throw new EntityNotFoundException("Project", $"Project with id :{dto.ProjectId} not found.");
+            }
+            var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+            if (userExists == null)
+            {
+                throw new EntityNotFoundException("User", $"Project with id :{userId} not found.");
+            }
 
-            var newJob = new ConversionJob
+            if (userExists.Role == "Member")
+            {
+                var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                if (!assignedProjectIds.Contains(dto.ProjectId))
+                {
+                    logger.LogWarning("User {UserId} (Member) tried to create job on unassigned Project {ProjectId}", userId, dto.ProjectId);
+                    throw new EntityNotAuthorizedException("Project", "You are not authorized to create jobs on this project.");
+                }
+            }
+
+            //----------------
+                var newJob = new ConversionJob
             {
                 ProjectId = dto.ProjectId,
                 PromptId = dto.PromptId,
