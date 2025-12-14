@@ -33,5 +33,22 @@ namespace CoordExtractorApp.Controllers
             //200
             return Ok(resultDto);
         }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ConversionJobReadOnlyDTO), 200)]
+        [ProducesResponseType(400)]//Bad Request (μη valid πολυγωνο)
+        [ProducesResponseType(404)] //Not found
+
+        public async Task<IActionResult>UpdateConversionJob(int id, [FromBody] ConversionJobUpdateDTO dto)
+        {
+            var user = await GetUserInfoAsync();
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+            var result = await applicationService.ConversionJobService.UpdateConversionJobAsync(id, dto, user.Id.Value);
+            return Ok(result);
+        }
+
+        
+
     }
 }

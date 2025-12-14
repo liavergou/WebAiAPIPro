@@ -49,7 +49,7 @@ namespace CoordExtractorApp.Services
             var userExists = await unitOfWork.UserRepository.GetAsync(userId);
             if (userExists == null)
             {
-                throw new EntityNotFoundException("User", $"Project with id :{userId} not found.");
+                throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
             }
 
             if (userExists.Role == "Member")
@@ -158,7 +158,6 @@ namespace CoordExtractorApp.Services
                 CroppedFileName = newJob.CroppedFileName,
                 ModelUsed = newJob.ModelUsed,
                 Status = newJob.Status,
-                Wkt = newJob.Geom?.AsText(),
                 ErrorMessage = newJob.ErrorMessage
                 
             };
@@ -183,5 +182,64 @@ namespace CoordExtractorApp.Services
 
             return responseDto; // 200 OK
         }
+
+        public async Task<ConversionJobReadOnlyDTO> UpdateConversionJobAsync(int id, ConversionJobUpdateDTO dto, int userId)
+        {
+            var job = await unitOfWork.ConversionJobRepository.GetAsync(id);
+
+            if (job == null) throw new EntityNotFoundException("ConversionJob", $"Job with id {id} not found");
+            
+            //security validation
+            var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+            if (userExists == null)
+            {
+                throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
+            }
+
+            if (userExists.Role == "Member")
+            {
+                var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                if (!assignedProjectIds.Contains(job.ProjectId))
+                {
+                    logger.LogWarning("User {UserId} (Member) tried to update job on unassigned Project {ProjectId}", userId, job.ProjectId);
+                    throw new EntityNotAuthorizedException("Project", "You are not authorized to update jobs on this project.");
+                }
+            }
+            //----------------
+            var coordinates = dto.Coordinates;
+            if (coordinates == null || coordinates.Count < 3) throw new InvalidArgumentException("Coordinates", "A valid polygon geometry requires at least 3 points.");
+
+            var newCoordinates = coordinates
+                .OrderBy(c => c.Order)
+                .Select(c => new Coordinate(c.X, c.Y))
+                .ToList();
+
+            //αν πρώτη coord δεν ειναι ίδια με την τελευταία προσθεσε την
+            //https://nettopologysuite.github.io/NetTopologySuite/api/NetTopologySuite.Geometries.Coordinate.html#NetTopologySuite_Geometries_Coordinate_Equals2D_NetTopologySuite_Geometries_Coordinate_
+            if (!newCoordinates.First().Equals2D(newCoordinates.Last()))
+            {
+                newCoordinates.Add(newCoordinates.First());
+            }
+
+            var factory = new GeometryFactory(new PrecisionModel(), 2100);
+            job.Geom = factory.CreatePolygon(newCoordinates.ToArray());
+
+            await unitOfWork.SaveAsync();//commit
+            logger.LogInformation("Job {JobId} updated successfully from user with {UserId}", job.Id, userId);
+
+            return new ConversionJobReadOnlyDTO
+            {
+                Id = job.Id,
+                OriginalFileName = job.OriginalFileName,
+                CroppedFileName = job.CroppedFileName,
+                ModelUsed = job.ModelUsed,
+                Status = job.Status,
+                ErrorMessage = job.ErrorMessage,
+                Coordinates = coordinates
+            };
+
+        }
+
+        
     }
 }
