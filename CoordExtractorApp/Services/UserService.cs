@@ -4,11 +4,9 @@
 ﻿using CoordExtractorApp.DTO;
 using CoordExtractorApp.DTO.Keycloak;
 using CoordExtractorApp.Exceptions;
-using CoordExtractorApp.Exceptions.keycloak;
 using CoordExtractorApp.Models;
 ﻿using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.Keycloak;
-using Keycloak.AuthServices.Common;
 using Serilog;
 ﻿using System.Linq.Expressions;
 ﻿using System.Security.Claims;
@@ -126,6 +124,13 @@ namespace CoordExtractorApp.Services
 ﻿                    await keycloakAdminService.UpdateUserRoleAsync(user.KeycloakId, userUpdateDto.Role);
 ﻿                }
 
+                //ελεγχος αλλαγής ρόλου και καθάρισμα πρόσβασης projectsusers
+                if(!string.IsNullOrEmpty(userUpdateDto.Role) && user.Role!=userUpdateDto.Role) 
+                {
+                    logger.LogInformation("Role changed for User with id: {Id}. Clear project assignments", id);
+                    await unitOfWork.UserRepository.SetProjectsForUserAsync(id, new List<int>());
+                }
+            
 ﻿                user.Email = userUpdateDto.Email ?? user.Email;
 ﻿                user.Firstname = userUpdateDto.Firstname ?? user.Firstname;
 ﻿                user.Lastname = userUpdateDto.Lastname ?? user.Lastname;
