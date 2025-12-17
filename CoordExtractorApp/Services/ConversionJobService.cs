@@ -240,6 +240,69 @@ namespace CoordExtractorApp.Services
 
         }
 
-        
+        public async Task<bool> DeleteConversionJobAsync(int id, int userId)
+        {
+
+            try
+            {
+                var job = await unitOfWork.ConversionJobRepository.GetAsync(id);
+
+                if (job == null)
+                {
+                    throw new EntityNotFoundException("Conversion Job", $"Job with ID: {id} not found");
+                }
+
+                //security validation
+                var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+                if (userExists == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
+                }
+
+                if (userExists.Role == "Member")
+                {
+                    var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                    if (!assignedProjectIds.Contains(job.ProjectId))
+                    {
+                        logger.LogWarning("User {UserId} (Member) tried to update job on unassigned Project {ProjectId}", userId, job.ProjectId);
+                        throw new EntityNotAuthorizedException("Project", "You are not authorized to update jobs on this project.");
+                    }
+                }
+                //----------------
+
+
+
+                bool movedFile = FileHelper.MoveImageToDeleted(job.CroppedFileName, job.ProjectId, configuration);
+
+                if (movedFile)
+                {
+                    logger.LogInformation("File moved to deleted for {Id} ", job.Id);
+                }
+                else
+                {
+                    logger.LogWarning("File not moved for {Id}", job.Id);
+                }
+
+                await unitOfWork.ConversionJobRepository.DeleteAsync(id);
+                await unitOfWork.SaveAsync();//COMMIT
+                logger.LogInformation("Job {JobId} deleted successfully from user with {UserId}", job.Id, userId);
+
+                return true;
+
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error deleting conversion job {JobId}.{Message}", id, ex.Message);
+                throw;
+            }
+            catch (EntityNotAuthorizedException ex)
+            {
+                logger.LogError("Unauthorized delete attempt for Job {JobId} by User {UserId}.{Message}", id, userId, ex.Message);
+                throw;
+            }
+
+
+        }
+
     }
 }

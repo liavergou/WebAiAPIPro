@@ -48,7 +48,21 @@ namespace CoordExtractorApp.Controllers
             return Ok(result);
         }
 
-        
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]//not found
+        public async Task<IActionResult> DeleteConversionJob(int id)
+        {
+            var user = await GetUserInfoAsync();
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+            var result = await applicationService.ConversionJobService.DeleteConversionJobAsync(id, user.Id.Value);
+            return NoContent();
+
+        }
+
+
 
     }
 }
