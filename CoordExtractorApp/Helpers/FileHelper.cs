@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
-namespace CoordExtractorApp.Helpers
+﻿namespace CoordExtractorApp.Helpers
 {
     public class FileHelper
     {
@@ -32,21 +30,45 @@ namespace CoordExtractorApp.Helpers
 
             //για αποθηκευση στη βαση
             return uniqueFileName;
-
-
         }
 
+        public static bool MoveImageToDeleted(string? croppedFileName, int projectId, IConfiguration configuration)
+        {
+                if (string.IsNullOrEmpty(croppedFileName))
+                {
+                    return false;
+                }
+
+                var storagePath = configuration["StoragePaths:Images"]; //από appsettings
+
+                //έλεγψος αν υπάρχει το storage path
+                if (storagePath == null)
+                {
+                    throw new InvalidOperationException("Storage path for images is not configured.");
+                }
+
+                var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
+                var deletedPath = Path.Combine(projectPath, "deleted");
 
 
+                    if (!Directory.Exists(deletedPath))
+                {
+                    Directory.CreateDirectory(deletedPath);
+                }
 
+                var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName);
+                var targetPath = Path.Combine(deletedPath, croppedFileName);
 
+                
+                    if (!File.Exists(sourcePath))
+                    {
+                        return false;
+                    }
 
+                    File.Move(sourcePath, targetPath);
+                    return true;
 
+            }
 
-
-
-
-
-
+        }
     }
-}
