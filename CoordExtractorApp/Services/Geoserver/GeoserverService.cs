@@ -18,8 +18,8 @@ namespace CoordExtractorApp.Services.Geoserver
 
         public async Task<string> GetProjectJobsGeoserverAsync(int projectId, string? username, string? role)
         {
-            string baseUrl = configuration["Geoserver:BaseUrl"] ?? throw new InvalidOperationException("Geoserver:BaseUrl configuration is missing."); ;
-            string typeName = configuration["Geoserver:ConversionJobsLayer"] ?? throw new InvalidOperationException("Geoserver:ConversionJobsLayer configuration is missing."); ;
+            string baseUrl = configuration["Geoserver:BaseUrl"] ?? throw new InvalidOperationException("Geoserver:BaseUrl configuration is missing.");
+            string typeName = configuration["Geoserver:ConversionJobsLayer"] ?? throw new InvalidOperationException("Geoserver:ConversionJobsLayer configuration is missing.");
 
             string cqlFilter = $"ProjectId={projectId}"; //το DeletedAt IS NULL μεταφερθηκε στο sql του view του geoserver
 
@@ -56,6 +56,56 @@ namespace CoordExtractorApp.Services.Geoserver
                 }
                 //επιστρέφουμε το περιεχομενο του response(geojson). πρεπει να μετατραπεί σε string γιατι ερχεται σαν data stream
                 string content = await response.Content.ReadAsStringAsync();
+                return content;
+            }
+
+            catch (HttpRequestException ex)
+            {
+                logger.LogError(ex, "Error connecting to GeoServer");
+                throw new ServerException("Geoserver", "Could not connect to Geoserver");
+            }
+
+        }
+
+        public async Task<byte[]> ExportProjectJobsGeoserverSHPAsync(int projectId, string? username, string? role)
+        {
+            string baseUrl = configuration["Geoserver:BaseUrl"] ?? throw new InvalidOperationException("Geoserver:BaseUrl configuration is missing."); ;
+            string typeName = configuration["Geoserver:ConversionJobsLayer"] ?? throw new InvalidOperationException("Geoserver:ConversionJobsLayer configuration is missing.");
+
+            string cqlFilter = $"ProjectId={projectId}";
+
+            string encodedCqlFilter = Uri.EscapeDataString(cqlFilter); //το 20% δεν δουλεψε
+
+            //https://docs.geoserver.org/main/en/user/services/wfs/outputformats.html
+            //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter=ProjectId%3D19&format_options=filename:project_19 //μονο αλλαγη output
+            string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter={encodedCqlFilter}&format_options=filename:project_{projectId}";
+
+            var client = this.httpClientFactory.CreateClient("GeoserverClient");
+
+            try
+            {
+
+                //ελεγχος να υπάρχει username role
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+                {
+                    throw new EntityNotAuthorizedException("Geoserver", "User and role not found.Cannot authenticate");
+                }
+                //προσθήκη στο header
+                client.DefaultRequestHeaders.Add("Keycloak-User", username);
+                client.DefaultRequestHeaders.Add("Keycloak-Role", role);
+
+                logger.LogInformation("Exporting shapefile from GeoServer url: {Url}", url);
+
+
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new ServerException("Geoserver", $"Failed to export shapefile from Geoserver.");
+
+                }
+                //επιστρέφουμε το περιεχομενο του response(shapefile σε zip).
+                byte[] content = await response.Content.ReadAsByteArrayAsync();
                 return content;
             }
 

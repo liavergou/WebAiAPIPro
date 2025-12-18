@@ -128,6 +128,19 @@ namespace CoordExtractorApp.Controllers
             return Content(geoJson, "application/json");
         }
 
+        //GET GEOSERVER JOBS SHP BY PROJECT ID
+        //GET /api/projects/{id}/jobs/shp
+        [HttpGet("{id}/jobs/shp")]
+        [Authorize(Roles = "Admin, Manager")]
+        public async Task<IActionResult> ExportSHPProjectGeoserverJobs(int id)
+        {
+            var user = await GetUserInfoAsync();
+
+            byte[] shp = await applicationService.GeoserverService.ExportProjectJobsGeoserverSHPAsync(id, user.Username, user.Role);
+
+            return File(shp, "application/zip", $"project_{id}.zip");
+        }
+
 
     }
 

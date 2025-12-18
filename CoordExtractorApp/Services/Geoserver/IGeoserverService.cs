@@ -4,5 +4,6 @@
     {
 
         Task<string> GetProjectJobsGeoserverAsync(int projectId, string? username, string? role);
+        Task<byte[]> ExportProjectJobsGeoserverSHPAsync(int projectId, string? username, string? role);
     }
 }
