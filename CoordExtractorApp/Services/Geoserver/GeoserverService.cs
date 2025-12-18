@@ -27,7 +27,7 @@ namespace CoordExtractorApp.Services.Geoserver
 
             //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=application/json&srsName=EPSG:4326 + το φίλτρο
             //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=application/json&srsName=EPSG:4326&cql_filter=ProjectId%3D21
-            string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=application/json&srsName=EPSG:4326&cql_filter={encodedCqlFilter}";
+            string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=application/json&srsName=EPSG:4326&cql_filter={encodedCqlFilter}&format_options=filename:project_{projectId}";
 
             //διορθωση σε δημιουργία client instance απο το factory για καθε request. δεν ήταν σωστό να χρησιμοποιώ τον ίδιο HttpClient. πιθανό Mix στα credentials σε δδιαφορετικές κλήσεις
             var client = this.httpClientFactory.CreateClient("GeoserverClient");
@@ -73,12 +73,14 @@ namespace CoordExtractorApp.Services.Geoserver
             string typeName = configuration["Geoserver:ConversionJobsLayer"] ?? throw new InvalidOperationException("Geoserver:ConversionJobsLayer configuration is missing.");
 
             string cqlFilter = $"ProjectId={projectId}";
+            string options = $"filename:project_{projectId};CHARSET:UTF-8";
 
             string encodedCqlFilter = Uri.EscapeDataString(cqlFilter); //το 20% δεν δουλεψε
+            string encodedOptions = Uri.EscapeDataString(options);
 
             //https://docs.geoserver.org/main/en/user/services/wfs/outputformats.html
             //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter=ProjectId%3D19&format_options=filename:project_19 //μονο αλλαγη output
-            string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter={encodedCqlFilter}&format_options=filename:project_{projectId}";
+            string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter={encodedCqlFilter}&format_options={encodedOptions}";
 
             var client = this.httpClientFactory.CreateClient("GeoserverClient");
 
