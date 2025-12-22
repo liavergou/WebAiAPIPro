@@ -39,27 +39,29 @@ namespace CoordExtractorApp.Services
         public async Task<ConversionJobReadOnlyDTO> CreateAndProcessJobAsync(ConversionJobInsertDTO dto, int userId)
         {
             logger.LogInformation("START CONVERSION: Job creation and processing for user {UserId}", userId);
+            try
+            {
 
-            //fix project and user role check
-            var projectExists = await unitOfWork.ProjectRepository.GetAsync(dto.ProjectId);
-            if (projectExists == null)
-            {
-                throw new EntityNotFoundException("Project", $"Project with id :{dto.ProjectId} not found.");
-            }
-            var userExists = await unitOfWork.UserRepository.GetAsync(userId);
-            if (userExists == null)
-            {
-                throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
-            }
-
-            if (userExists.Role == "Member")
-            {
-                var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
-                if (!assignedProjectIds.Contains(dto.ProjectId))
+                    //fix project and user role check
+                    var projectExists = await unitOfWork.ProjectRepository.GetAsync(dto.ProjectId);
+                if (projectExists == null)
                 {
-                    logger.LogWarning("User {UserId} (Member) tried to create job on unassigned Project {ProjectId}", userId, dto.ProjectId);
-                    throw new EntityNotAuthorizedException("Project", "You are not authorized to create jobs on this project.");
+                    throw new EntityNotFoundException("Project", $"Project with id :{dto.ProjectId} not found.");
                 }
+                var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+                if (userExists == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
+                }
+
+                if (userExists.Role == "Member")
+                {
+                    var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                    if (!assignedProjectIds.Contains(dto.ProjectId))
+                    {
+                        logger.LogWarning("User {UserId} (Member) tried to create job on unassigned Project {ProjectId}", userId, dto.ProjectId);
+                        throw new EntityNotAuthorizedException("Project", "You are not authorized to create jobs on this project.");
+                    }
             }
 
             //----------------
@@ -131,8 +133,8 @@ namespace CoordExtractorApp.Services
                 newJob.Status = JobStatus.Completed;
                 newJob.ModelUsed = configuration["Gemini:Model"];
             }
-            
-            catch (Exception ex) when 
+
+            catch (Exception ex) when
             (ex is InvalidOperationException || ex is EntityNotFoundException || ex is ArgumentNullException)
             {
                 // Job status FAILURE
@@ -180,63 +182,89 @@ namespace CoordExtractorApp.Services
                     .ToList();
             }
 
-            return responseDto; // 200 OK
+                return responseDto; // 200 OK
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error in job creation. {Message}", ex.Message);
+                throw;
+            }
+            catch (EntityNotAuthorizedException ex)
+            {
+                logger.LogError("Unauthorized job creation attempt by User {UserId}. {Message}", userId, ex.Message);
+                throw;
+            }
         }
 
         public async Task<ConversionJobReadOnlyDTO> UpdateConversionJobAsync(int id, ConversionJobUpdateDTO dto, int userId)
         {
-            var job = await unitOfWork.ConversionJobRepository.GetAsync(id);
-
-            if (job == null) throw new EntityNotFoundException("ConversionJob", $"Job with id {id} not found");
-            
-            //security validation
-            var userExists = await unitOfWork.UserRepository.GetAsync(userId);
-            if (userExists == null)
+            try
             {
-                throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
-            }
+                var job = await unitOfWork.ConversionJobRepository.GetAsync(id);
 
-            if (userExists.Role == "Member")
-            {
-                var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
-                if (!assignedProjectIds.Contains(job.ProjectId))
+                if (job == null) throw new EntityNotFoundException("ConversionJob", $"Job with id {id} not found");
+
+                //security validation
+                var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+                if (userExists == null)
                 {
-                    logger.LogWarning("User {UserId} (Member) tried to update job on unassigned Project {ProjectId}", userId, job.ProjectId);
-                    throw new EntityNotAuthorizedException("Project", "You are not authorized to update jobs on this project.");
+                    throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
                 }
-            }
-            //----------------
-            var coordinates = dto.Coordinates;
-            if (coordinates == null || coordinates.Count < 3) throw new InvalidArgumentException("Coordinates", "A valid polygon geometry requires at least 3 points.");
 
-            var newCoordinates = coordinates
-                .OrderBy(c => c.Order)
-                .Select(c => new Coordinate(c.X, c.Y))
-                .ToList();
+                if (userExists.Role == "Member")
+                {
+                    var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                    if (!assignedProjectIds.Contains(job.ProjectId))
+                    {
+                        logger.LogWarning("User {UserId} (Member) tried to update job on unassigned Project {ProjectId}", userId, job.ProjectId);
+                        throw new EntityNotAuthorizedException("Project", "You are not authorized to update jobs on this project.");
+                    }
+                }
+                //----------------
+                var coordinates = dto.Coordinates;
+                if (coordinates == null || coordinates.Count < 3) throw new InvalidArgumentException("Coordinates", "A valid polygon geometry requires at least 3 points.");
 
-            //αν πρώτη coord δεν ειναι ίδια με την τελευταία προσθεσε την
-            //https://nettopologysuite.github.io/NetTopologySuite/api/NetTopologySuite.Geometries.Coordinate.html#NetTopologySuite_Geometries_Coordinate_Equals2D_NetTopologySuite_Geometries_Coordinate_
-            if (!newCoordinates.First().Equals2D(newCoordinates.Last()))
+                var newCoordinates = coordinates
+                    .OrderBy(c => c.Order)
+                    .Select(c => new Coordinate(c.X, c.Y))
+                    .ToList();
+
+                //αν πρώτη coord δεν ειναι ίδια με την τελευταία προσθεσε την
+                //https://nettopologysuite.github.io/NetTopologySuite/api/NetTopologySuite.Geometries.Coordinate.html#NetTopologySuite_Geometries_Coordinate_Equals2D_NetTopologySuite_Geometries_Coordinate_
+                if (!newCoordinates.First().Equals2D(newCoordinates.Last()))
+                {
+                    newCoordinates.Add(newCoordinates.First());
+                }
+
+                var factory = new GeometryFactory(new PrecisionModel(), 2100);
+                job.Geom = factory.CreatePolygon(newCoordinates.ToArray());
+
+                await unitOfWork.SaveAsync();//commit
+                logger.LogInformation("Job {JobId} updated successfully from user with {UserId}", job.Id, userId);
+
+                return new ConversionJobReadOnlyDTO
+                {
+                    Id = job.Id,
+                    OriginalFileName = job.OriginalFileName,
+                    CroppedFileName = job.CroppedFileName,
+                    ModelUsed = job.ModelUsed,
+                    Status = job.Status,
+                    ErrorMessage = job.ErrorMessage,
+                    Coordinates = coordinates
+                };
+            }catch (EntityNotFoundException ex)
             {
-                newCoordinates.Add(newCoordinates.First());
-            }
-
-            var factory = new GeometryFactory(new PrecisionModel(), 2100);
-            job.Geom = factory.CreatePolygon(newCoordinates.ToArray());
-
-            await unitOfWork.SaveAsync();//commit
-            logger.LogInformation("Job {JobId} updated successfully from user with {UserId}", job.Id, userId);
-
-            return new ConversionJobReadOnlyDTO
+                logger.LogError("Error updating job with jobid :{JobId}. {Message}", id, ex.Message);
+                throw;
+            }catch (EntityNotAuthorizedException ex)
             {
-                Id = job.Id,
-                OriginalFileName = job.OriginalFileName,
-                CroppedFileName = job.CroppedFileName,
-                ModelUsed = job.ModelUsed,
-                Status = job.Status,
-                ErrorMessage = job.ErrorMessage,
-                Coordinates = coordinates
-            };
+                logger.LogError("Unauthorized update attempt for Job {JobId} by User {UserId}.{Message}", id, userId, ex.Message);
+                throw;
+            }catch (InvalidArgumentException ex)
+            {
+                logger.LogError("Invalid polygon for job {JobId}. {Message}", id, ex.Message);
+                throw;
+            }
 
         }
 
