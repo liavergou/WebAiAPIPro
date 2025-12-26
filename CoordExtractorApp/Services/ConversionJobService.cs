@@ -160,8 +160,11 @@ namespace CoordExtractorApp.Services
                 CroppedFileName = newJob.CroppedFileName,
                 ModelUsed = newJob.ModelUsed,
                 Status = newJob.Status,
-                ErrorMessage = newJob.ErrorMessage
-                
+                ErrorMessage = newJob.ErrorMessage,
+                ProjectId = newJob.ProjectId,
+                PromptId = newJob.PromptId,
+                DeletedAt = newJob.DeletedAt,
+
             };
 
             // μετατροπή geometry σε σημεία
@@ -250,7 +253,10 @@ namespace CoordExtractorApp.Services
                     ModelUsed = job.ModelUsed,
                     Status = job.Status,
                     ErrorMessage = job.ErrorMessage,
-                    Coordinates = coordinates
+                    Coordinates = coordinates,
+                    ProjectId = job.ProjectId,
+                    PromptId = job.PromptId,
+                    DeletedAt = job.DeletedAt
                 };
             }catch (EntityNotFoundException ex)
             {
@@ -372,7 +378,10 @@ namespace CoordExtractorApp.Services
                     CroppedFileName = job.CroppedFileName,
                     ModelUsed = job.ModelUsed,
                     Status = job.Status,
-                    ErrorMessage = job.ErrorMessage
+                    ErrorMessage = job.ErrorMessage,
+                    ProjectId = job.ProjectId,
+                    PromptId = job.PromptId,
+                    DeletedAt = job.DeletedAt
                 };
 
                 // Μετατροπή geometry σε coordinates

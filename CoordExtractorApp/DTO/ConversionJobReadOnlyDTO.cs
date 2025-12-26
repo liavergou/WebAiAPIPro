@@ -15,5 +15,11 @@ namespace CoordExtractorApp.DTO
         public JobStatus Status { get; set; } = JobStatus.Pending;
         public string? ErrorMessage { get; set; }
 
+        public int ProjectId { get; set; }
+        public int PromptId { get; set; }
+        public DateTime? DeletedAt { get; set; }
+
+
+
     }
 }
