@@ -1,5 +1,6 @@
 ﻿using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.DTO;
+using CoordExtractorApp.Exceptions;
 using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -115,9 +116,9 @@ namespace CoordExtractorApp.Controllers
         
 
         //GET GEOSERVER JOBS GEOJSON BY PROJECT ID
-        //GET /api/projects/{id}/jobs
-        [HttpGet("{id}/jobs")]
-        [Authorize(Roles = "Admin, Manager")]
+        //GET /api/projects/{id}/conversion-jobs
+        [HttpGet("{id}/conversion-jobs")]
+        [Authorize]
 
         public async Task<IActionResult> GetProjectGeoserverJobs(int id)
         {
@@ -130,7 +131,7 @@ namespace CoordExtractorApp.Controllers
 
         //GET GEOSERVER JOBS SHP BY PROJECT ID
         //GET /api/projects/{id}/jobs/shp
-        [HttpGet("{id}/jobs/shp")]
+        [HttpGet("{id}/conversion-jobs/shp")]
         [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> ExportSHPProjectGeoserverJobs(int id)
         {
@@ -141,6 +142,58 @@ namespace CoordExtractorApp.Controllers
             return File(shp, "application/zip", $"project_{id}.zip");
         }
 
+        //CREATE CONVERSION JOB
+        //POST /api/projects/{projectId}/conversion-jobs/new
+        [HttpPost("{projectId}/conversion-jobs/new")]
+        [Authorize]
+        [ProducesResponseType(typeof(ConversionJobReadOnlyDTO), 200)] //success
+        [ProducesResponseType(typeof(ConversionJobReadOnlyDTO), 422)] //The server understands the content type and syntax of the request entity, but it is still unable to process the request for some reason.
+        [ProducesResponseType(400)] //Bad Request
+        public async Task<IActionResult> CreateConversionJob(int projectId, [FromForm] ConversionJobInsertDTO dto)
+        {
+            //Ο user που συνδέεται με το conversion job
+            var user = await GetUserInfoAsync(); //(base) για τον current user
+
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+
+            // Service
+            var resultDto = await this.applicationService.ConversionJobService
+                .CreateAndProcessJobAsync(dto, user.Id.Value);
+
+            //200
+            return Ok(resultDto);
+        }
+
+        //UPDATE CONVERSION JOB
+        //PUT /api/projects/{projectId}/conversion-jobs/{jobId}
+        [HttpPut("{projectId}/conversion-jobs/{jobId}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ConversionJobReadOnlyDTO), 200)]
+        [ProducesResponseType(400)]//Bad Request (μη valid πολυγωνο)
+        [ProducesResponseType(404)] //Not found
+
+        public async Task<IActionResult> UpdateConversionJob(int projectId, int jobId, [FromBody] ConversionJobUpdateDTO dto)
+        {
+            var user = await GetUserInfoAsync();
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+            var result = await applicationService.ConversionJobService.UpdateConversionJobAsync(jobId, dto, user.Id.Value);
+            return Ok(result);
+        }
+
+        //DELETE CONVERSION JOB
+        //DELETE /api/projects/{projectId}/conversion-jobs/{jobId}
+        [HttpDelete("{projectId}/conversion-jobs/{jobId}")]
+        [Authorize]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]//not found
+        public async Task<IActionResult> DeleteConversionJob(int projectId, int jobId)
+        {
+            var user = await GetUserInfoAsync();
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+            var result = await applicationService.ConversionJobService.DeleteConversionJobAsync(jobId, user.Id.Value);
+            return NoContent();
+
+        }
 
     }
 
