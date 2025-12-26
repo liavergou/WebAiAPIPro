@@ -6,13 +6,15 @@
         public static async Task<string> SaveImageFromBytesAsync(byte[] imageBytes, string originalFileName, int projectId, IConfiguration configuration)
 
         {
-            var storagePath = configuration["StoragePaths:Images"]; //από appsettings
+            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
 
             //έλεγψος αν υπάρχει το storage path
-            if (storagePath == null)
+            if (storageRelativePath == null)
             {
                 throw new InvalidOperationException("Storage path for images is not configured.");
             }
+            // αν ειναι relative path μετατροπή σε absolute path
+            var storagePath = Path.IsPathRooted(storageRelativePath) ? storageRelativePath : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath); //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
 
             //δημιουργία subfolder για κάθε project πχ. Project_1 κλπ
             var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
@@ -34,21 +36,22 @@
 
         public static bool MoveImageToDeleted(string? croppedFileName, int projectId, IConfiguration configuration)
         {
-                if (string.IsNullOrEmpty(croppedFileName))
-                {
-                    return false;
-                }
 
-                var storagePath = configuration["StoragePaths:Images"]; //από appsettings
+            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
 
-                //έλεγψος αν υπάρχει το storage path
-                if (storagePath == null)
-                {
-                    throw new InvalidOperationException("Storage path for images is not configured.");
-                }
+            //έλεγψος αν υπάρχει το storage path
+            if (storageRelativePath == null)
+            {
+                throw new InvalidOperationException("Storage path for images is not configured.");
+            }
 
-                var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
-                var deletedPath = Path.Combine(projectPath, "deleted");
+            // αν ειναι relative path μετατροπή σε absolute path
+            var storagePath = Path.IsPathRooted(storageRelativePath) //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
+                ? storageRelativePath
+                : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath);
+
+            var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
+            var deletedPath = Path.Combine(projectPath, "deleted");
 
 
                     if (!Directory.Exists(deletedPath))
@@ -56,7 +59,7 @@
                     Directory.CreateDirectory(deletedPath);
                 }
 
-                var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName);
+                var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName!);
                 var targetPath = Path.Combine(deletedPath, croppedFileName);
 
                 
