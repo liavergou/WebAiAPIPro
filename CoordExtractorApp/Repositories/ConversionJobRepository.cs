@@ -41,30 +41,6 @@ namespace CoordExtractorApp.Repositories
 
             return jobs;
         }
-
-        public async Task<PaginatedResult<ConversionJob>> GetPaginatedJobsAsync(int pageNumber, int pageSize, List<Expression<Func<ConversionJob, bool>>> predicates)
-        {
-            IQueryable<ConversionJob> query = context.ConversionJobs;
-            if (predicates != null) //αν εχει φιλτρα
-            {
-                foreach (var predicate in predicates) //loop για καθε φίλτρο
-                {
-                    query = query.Where(predicate); //προσθέτει τη συνθήκη
-                }
-            }
-            int totalRecords = await query.CountAsync(); //μετράμε records στη βαση
-
-            int skip = (pageNumber - 1) * pageSize;
-
-            var data = await query
-                .OrderBy(j => j.Id)
-                .Skip(skip)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PaginatedResult<ConversionJob>(data, totalRecords, pageNumber, pageSize);
-        }
-
        
     }
 }
