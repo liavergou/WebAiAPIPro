@@ -332,5 +332,75 @@ namespace CoordExtractorApp.Services
 
         }
 
+        public async Task<ConversionJobReadOnlyDTO> GetConversionJobByIdAsync(int id, int userId)
+        {
+            try
+            {
+                var job = await unitOfWork.ConversionJobRepository.GetAsync(id);
+
+                if (job == null)
+                {
+                    throw new EntityNotFoundException("Conversion Job", $"Job with ID: {id} not found");
+                }
+
+                //security validation
+                var userExists = await unitOfWork.UserRepository.GetAsync(userId);
+                if (userExists == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
+                }
+
+                if (userExists.Role == "Member")
+                {
+                    var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
+                    if (!assignedProjectIds.Contains(job.ProjectId))
+                    {
+                        logger.LogWarning("User {UserId} (Member) tried to retrieve job on unassigned Project {ProjectId}", userId, job.ProjectId);
+                        throw new EntityNotAuthorizedException("Project", "You are not authorized to retrieve jobs on this project.");
+                    }
+                }
+                //----------------
+
+                logger.LogInformation("Job {JobId} retrieved successfully by User {UserId}", id, userId);
+
+                //mapping για επιστροφή response
+                //https://postgis.net/workshops/postgis-intro/geometries.html SELECT name, ST_AsText(geom) FROM geometries;
+                var dto = new ConversionJobReadOnlyDTO
+                {
+                    Id = job.Id,
+                    OriginalFileName = job.OriginalFileName,
+                    CroppedFileName = job.CroppedFileName,
+                    ModelUsed = job.ModelUsed,
+                    Status = job.Status,
+                    ErrorMessage = job.ErrorMessage
+                };
+
+                // Μετατροπή geometry σε coordinates
+                if (job.Geom != null && job.Geom is NetTopologySuite.Geometries.Polygon polygon)
+                {
+                    dto.Coordinates = polygon.ExteriorRing.Coordinates
+                        .Take(polygon.ExteriorRing.Coordinates.Length - 1)
+                        .Select((coord, index) => new CoordinateDTO
+                        {
+                            Order = index + 1,
+                            X = coord.X,
+                            Y = coord.Y
+                        })
+                        .ToList();
+                }
+
+                return dto;
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error retrieving job {JobId}. {Message}", id, ex.Message);
+                throw;
+            }
+            catch (EntityNotAuthorizedException ex)
+            {
+                logger.LogError("Unauthorized attempt to view Job {JobId} by User {UserId}. {Message}", id, userId, ex.Message);
+                throw;
+            }
+        }
     }
 }

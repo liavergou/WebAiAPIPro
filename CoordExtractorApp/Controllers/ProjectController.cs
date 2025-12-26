@@ -164,6 +164,20 @@ namespace CoordExtractorApp.Controllers
             return Ok(resultDto);
         }
 
+        //GET CONVERSION JOB BY ID
+        //GET /api/projects/{projectId}/conversion-jobs/{jobId}
+        [HttpGet("{projectId}/conversion-jobs/{jobId}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ConversionJobReadOnlyDTO), 200)]
+        [ProducesResponseType(404)] //Not found
+        public async Task<IActionResult> GetConversionJobById(int projectId, int jobId)
+        {
+            var user = await GetUserInfoAsync();
+            if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
+            var result = await applicationService.ConversionJobService.GetConversionJobByIdAsync(jobId, user.Id.Value);
+            return Ok(result);
+        }
+
         //UPDATE CONVERSION JOB
         //PUT /api/projects/{projectId}/conversion-jobs/{jobId}
         [HttpPut("{projectId}/conversion-jobs/{jobId}")]
