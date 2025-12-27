@@ -8,14 +8,11 @@ using CoordExtractorApp.Services.Geoserver;
 using CoordExtractorApp.Services.Keycloak;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
-using NetTopologySuite.IO;
 using Newtonsoft.Json.Converters;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Serilog;
-using System.Security.Claims;
-using System.Text.Json.Serialization;
 
 
 namespace CoordExtractorApp
@@ -26,12 +23,16 @@ namespace CoordExtractorApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //για το keyvault του azure
-            var keyVaultUri = builder.Configuration["KeyVaultUri"];
-
-            if (!string.IsNullOrWhiteSpace(keyVaultUri))
+            //για το keyvault του azure (μονο dev)
+            if (builder.Environment.IsDevelopment())
             {
-                builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+                var keyVaultUri = builder.Configuration["KeyVaultUri"];
+                if (!string.IsNullOrEmpty(keyVaultUri))
+                {
+                    builder.Configuration.AddAzureKeyVault(
+                        new Uri(keyVaultUri),
+                        new DefaultAzureCredential());
+                }
             }
 
             //generativeAI (gemini key)
@@ -158,6 +159,18 @@ namespace CoordExtractorApp
             
 
             app.UseCors("AllowAll");
+
+            // Serve static images in Development mode (in Production, IIS virtual directory handles this)
+            // https://stackoverflow.com/questions/73547048/static-files-or-images-png-doesnt-load-using-c-sharp-net-6-with-react-js
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(
+                        Path.Combine(app.Environment.ContentRootPath, "storage")),
+                    RequestPath = "/storage"
+                });
+            }
 
             app.UseAuthentication();
 

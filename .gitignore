@@ -373,3 +373,4 @@ FodyWeavers.xsd
 /CoordExtractorApp/storage/images
 /test_files
 /QGIS_postgresql_polygons.qgz
+/CoordExtractorApp/appsettings.Production.json
