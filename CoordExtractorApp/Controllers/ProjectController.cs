@@ -5,6 +5,7 @@ using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 
 namespace CoordExtractorApp.Controllers
@@ -113,12 +114,14 @@ namespace CoordExtractorApp.Controllers
             
             return NoContent();
         }
-        
+
 
         //GET GEOSERVER JOBS GEOJSON BY PROJECT ID
         //GET /api/projects/{id}/conversion-jobs
         [HttpGet("{id}/conversion-jobs")]
         [Authorize]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(JObject), 200)]
 
         public async Task<IActionResult> GetProjectGeoserverJobs(int id)
         {
@@ -133,6 +136,8 @@ namespace CoordExtractorApp.Controllers
         //GET /api/projects/{id}/jobs/shp
         [HttpGet("{id}/conversion-jobs/shp")]
         [Authorize(Roles = "Admin, Manager")]
+        [Produces("application/zip")]
+        [ProducesResponseType(typeof(FileResult), 200)]
         public async Task<IActionResult> ExportSHPProjectGeoserverJobs(int id)
         {
             var user = await GetUserInfoAsync();
