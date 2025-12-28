@@ -47,7 +47,7 @@ namespace CoordExtractorApp.Controllers
         [HttpGet("all")]
         [Authorize]
         [ProducesResponseType(typeof(PromptReadOnlyDTO), 200)] //Success 200 OK
-        public async Task<IActionResult> GetAllProjects()
+        public async Task<IActionResult> GetAllPrompts()
         {
             var prompts = await applicationService.PromptService.GetAllPromtsAsync();
             return Ok(prompts);
