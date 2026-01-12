@@ -1,11 +1,12 @@
-﻿
-using GenerativeAI.Core;
-using Microsoft.Extensions.Caching.Memory;
-using RTools_NTS.Util;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace CoordExtractorApp.Services.Keycloak
 {
+    /// <summary>
+    /// Implementation of Keycloak admin token service
+    /// </summary>
+    
+
     //απο https://www.keycloak.org/securing-apps/oidc-layers Token endpoint /realms/{realm-name}/protocol/openid-connect/token
     //https://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint
     //Client Credentials Grant Flow.
@@ -24,6 +25,10 @@ namespace CoordExtractorApp.Services.Keycloak
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves an access token for the Keycloak Admin API using Client Credentials Flow.
+        /// </summary>
+        /// <returns>The access token string, or null if retrieval fails.</returns>
         public async Task<string?> GetAdminAccessTokenAsync()
         {
             //παίρνω από appsettings

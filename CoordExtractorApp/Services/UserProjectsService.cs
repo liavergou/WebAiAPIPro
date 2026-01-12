@@ -3,8 +3,6 @@ using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Exceptions;
 using CoordExtractorApp.Repositories;
-using CoordExtractorApp.Services.Keycloak;
-using Microsoft.Identity.Client;
 using Serilog;
 
 namespace CoordExtractorApp.Services
@@ -22,6 +20,12 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieves the list of project IDs assigned to a specific user.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <returns>A DTO containing the list of assigned project IDs.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
         public async Task<UserProjectsDTO>GetUserProjectsAsync(int id)
         {
             User? user = null;
@@ -50,6 +54,11 @@ namespace CoordExtractorApp.Services
             }        
         }
 
+        /// <summary>
+        /// Retrieves the list of Project objects assigned to a user (used for Project Cards).
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <returns>A list of read-only project DTOs.</returns>
         public async Task<List<ProjectReadOnlyDTO>> GetUserProjectsByUserIdAsync(int id)
         {
             var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(id);
@@ -67,6 +76,13 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
+        /// <summary>
+        /// Updates the project assignments for a user.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <param name="dto">The DTO containing the new list of project IDs.</param>
+        /// <returns>The updated UserProjectsDTO.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
         public async Task<UserProjectsDTO> UpdateUserProjectsAsync(int id, UserProjectsUpdateDTO dto)
         {
             try

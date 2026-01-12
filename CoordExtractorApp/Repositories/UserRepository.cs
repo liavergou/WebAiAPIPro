@@ -18,7 +18,6 @@ namespace CoordExtractorApp.Repositories
 
             if (user == null) return null;
             return user;
-            //TODO//ΝΑ ΔΟΚΙΜΑΣΩ ΚΑΙ ΜΕ LINQ ΝΑ ΠΑΡΩ ΜΟΝΟ ID ΑΝ ΑΡΓΕΙ
         }
 
         public async Task<User?> GetUserByIdAsync(int id)

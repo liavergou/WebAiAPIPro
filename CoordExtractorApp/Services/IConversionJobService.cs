@@ -1,5 +1,4 @@
-﻿using CoordExtractorApp.Data;
-using CoordExtractorApp.DTO;
+﻿using CoordExtractorApp.DTO;
 
 namespace CoordExtractorApp.Services
 {

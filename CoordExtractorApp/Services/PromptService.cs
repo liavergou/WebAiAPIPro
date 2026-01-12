@@ -24,6 +24,12 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieves a Prompt by its unique identifier.
+        /// </summary>
+        /// <param name="id">The prompt ID.</param>
+        /// <returns>A DTO containing the prompt details.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<PromptReadOnlyDTO?> GetPromptByIdAsync(int id)
         {
             Prompt? prompt = null;
@@ -51,6 +57,12 @@ namespace CoordExtractorApp.Services
 
         }
 
+        /// <summary>
+        /// Retrieves a Prompt by its name.
+        /// </summary>
+        /// <param name="promptName">The name of the prompt.</param>
+        /// <returns>A DTO containing the prompt details.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<PromptReadOnlyDTO?> GetPromptByPromptNameAsync(string promptName)
         {
             try
@@ -73,6 +85,10 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves all Prompts from the database.
+        /// </summary>
+        /// <returns>A list of all prompts ordered by ID.</returns>
         public async Task<List<PromptReadOnlyDTO>> GetAllPromtsAsync()
         {
             var prompts = await unitOfWork.PromptRepository.GetAllAsync();
@@ -83,7 +99,13 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
-        
+        /// <summary>
+        /// Retrieves a paginated and filtered list of Prompts.
+        /// </summary>
+        /// <param name="pageNumber">The page number.</param>
+        /// <param name="pageSize">The page size.</param>
+        /// <param name="promptFilterDTO">Filter criteria (e.g., prompt name).</param>
+        /// <returns>A paginated result containing the prompts.</returns>
         public async Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int pageNumber, int pageSize,PromptFilterDTO promptFilterDTO)
         {
             try
@@ -122,6 +144,12 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        /// <summary>
+        /// Creates a new Prompt.
+        /// </summary>
+        /// <param name="promptCreateDTO">The data for the new prompt.</param>
+        /// <returns>The created prompt DTO.</returns>
+        /// <exception cref="EntityAlreadyExistsException">Thrown if a prompt with the same name already exists.</exception>
         public async Task<PromptReadOnlyDTO> CreatePromptAsync(PromptCreateDTO promptCreateDTO)
         {
             try
@@ -153,7 +181,14 @@ namespace CoordExtractorApp.Services
         }
 
 
-
+        /// <summary>
+        /// Updates an existing Prompt.
+        /// </summary>
+        /// <param name="id">The prompt ID.</param>
+        /// <param name="promptUpdateDTO">The updated prompt data.</param>
+        /// <returns>True if the update was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
+        /// <exception cref="EntityAlreadyExistsException">Thrown if the new name conflicts with another prompt.</exception>
         public async Task<bool> UpdatePromptAsync(int id, PromptUpdateDTO promptUpdateDTO)
         {
             try
@@ -202,6 +237,12 @@ namespace CoordExtractorApp.Services
 
         }
 
+        /// <summary>
+        /// Soft deletes a Prompt and cascades deletion to associated conversion jobs.
+        /// </summary>
+        /// <param name="id">The prompt ID.</param>
+        /// <returns>True if deletion was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<bool> DeletePromptAsync(int id)
         {
             try

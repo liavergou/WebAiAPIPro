@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoordExtractorApp.Controllers
 {
+    /// <summary>
+    /// Manages prompts for coordinate extraction
+    /// </summary>
     [ApiController]
     [Route("api/prompts")] // Base route: /api/prompts
     public class PromptController :BaseController
@@ -16,6 +19,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Creates a new prompt
+        /// </summary>
+        /// <param name="promptCreateDTO">Prompt creation data</param>
+        /// <returns>The created prompt</returns>
         //CREATE Prompt
         //POST /api/prompts
         [HttpPost]
@@ -30,6 +38,11 @@ namespace CoordExtractorApp.Controllers
             return CreatedAtAction(nameof(GetPromptById), new { id = promptReadOnlyDTO.Id }, promptReadOnlyDTO);
         }
 
+        /// <summary>
+        /// Get a prompt by id
+        /// </summary>
+        /// <param name="id">Prompt id</param>
+        /// <returns>Prompt details</returns>
         //GET PROMPT BY ID
         //GET /api/prompts/{id}
         [HttpGet("{id}")]
@@ -42,6 +55,10 @@ namespace CoordExtractorApp.Controllers
             return Ok(promptReadOnlyDTO);
         }
 
+        /// <summary>
+        /// Get all prompts
+        /// </summary>
+        /// <returns>List of all prompts</returns>
         //GET ALL PROMPTS (μενου για χρήστη)
         // GET /api/prompts/all
         [HttpGet("all")]
@@ -53,8 +70,13 @@ namespace CoordExtractorApp.Controllers
             return Ok(prompts);
         }
 
-
-
+        /// <summary>
+        /// Get paginated prompts with optional filtering
+        /// </summary>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Items per page</param>
+        /// <param name="promptName">Prompt name filter (optional)</param>
+        /// <returns>Paginated prompt list</returns>
         //GET ALL PROMPTS paginated
         // GET /api/prompts?pageNumber=1&pageSize=10
         [HttpGet]
@@ -80,6 +102,12 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Updates an existing prompt
+        /// </summary>
+        /// <param name="id">Prompt id</param>
+        /// <param name="promptUpdateDto">Updated prompt data</param>
+        /// <returns>No content</returns>
         //UPDATE PROMPT
         //PUT /api/prompts/{id}
         [HttpPut("{id}")]
@@ -95,6 +123,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes a prompt
+        /// </summary>
+        /// <param name="id">Prompt id</param>
+        /// <returns>No content</returns>
         //DELETE PROMPT
         //DELETE /api/prompts/{id}
         [HttpDelete("{id}")]

@@ -23,6 +23,12 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieves a project by its unique identifier.
+        /// </summary>
+        /// <param name="id">The project ID.</param>
+        /// <returns>A DTO containing project details.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown when the project does not exist.</exception>
         public async Task<ProjectDTO?> GetProjectByIdAsync(int id)
         {
             Project? project = null;
@@ -56,6 +62,12 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves a project by its name.
+        /// </summary>
+        /// <param name="projectName">The name of the project.</param>
+        /// <returns>A read-only DTO of the project.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown when the project does not exist.</exception>
         public async Task<ProjectReadOnlyDTO?> GetProjectByProjectNameAsync(string projectName)
         {
             try
@@ -80,6 +92,10 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves all projects from the database.
+        /// </summary>
+        /// <returns>A list of all projects ordered by name.</returns>
         public async Task<List<ProjectReadOnlyDTO>> GetAllProjectsAsync()
         {
             var projects = await unitOfWork.ProjectRepository.GetAllAsync();
@@ -91,6 +107,13 @@ namespace CoordExtractorApp.Services
 
         }
 
+        /// <summary>
+        /// Retrieves a paginated and filtered list of projects.
+        /// </summary>
+        /// <param name="pageNumber">The page number.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="projectFilterDTO">Filter criteria (e.g., project name).</param>
+        /// <returns>A paginated result containing the projects.</returns>
         public async Task<PaginatedResult<ProjectDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, ProjectFilterDTO projectFilterDTO)
         {
             try
@@ -130,6 +153,12 @@ namespace CoordExtractorApp.Services
             }
         }
 
+        /// <summary>
+        /// Creates a new project in the database.
+        /// </summary>
+        /// <param name="projectCreateDTO">Data for the new project.</param>
+        /// <returns>The created project DTO.</returns>
+        /// <exception cref="EntityAlreadyExistsException">Thrown if a project with the same name already exists.</exception>
         public async Task<ProjectDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO)
         {
             try
@@ -170,7 +199,14 @@ namespace CoordExtractorApp.Services
         }
 
 
-
+        /// <summary>
+        /// Updates an existing project.
+        /// </summary>
+        /// <param name="id">The project ID.</param>
+        /// <param name="projectUpdateDTO">The updated project data.</param>
+        /// <returns>True if the update was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the project is not found.</exception>
+        /// <exception cref="EntityAlreadyExistsException">Thrown if the new name conflicts with another project.</exception>
         public async Task<bool> UpdateProjectAsync(int id, ProjectUpdateDTO projectUpdateDTO)
         {
             try
@@ -216,6 +252,12 @@ namespace CoordExtractorApp.Services
 
         }
 
+        /// <summary>
+        /// Soft deletes a project and cascades the deletion to its conversion jobs.
+        /// </summary>
+        /// <param name="id">The project ID.</param>
+        /// <returns>True if deletion was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the project is not found.</exception>
         public async Task<bool> DeleteProjectAsync(int id)
         {
             try

@@ -10,6 +10,15 @@ namespace CoordExtractorApp.Services.GenerativeAI
         private readonly IConfiguration configuration = configuration;
         private readonly ILogger <GenerativeAIService> logger = logger;
 
+        /// <summary>
+        /// Sends an image and a text prompt to the Gemini Generative AI API to extract geometry in WKT format.
+        /// </summary>
+        /// <param name="imageBytes">The image file data as a byte array.</param>
+        /// <param name="mimeType">The MIME type of the image (e.g. "image/png").</param>
+        /// <param name="promptText">The text prompt instructing the AI on what to extract.</param>
+        /// <returns>A string containing the extracted geometry in Well-Known Text format.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if API keys or models are missing, or if the API response is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the prompt text is null or empty.</exception>
         public async Task<string> GetWktFromImageAsync(byte[] imageBytes, string mimeType, string promptText)
         {
             
@@ -53,7 +62,7 @@ namespace CoordExtractorApp.Services.GenerativeAI
 
             //https://gunpal5.github.io/generative-ai/html/aafe0c76-3855-8b3c-d0ed-76af0fe53276.htm
             //https://github.com/gunpal5/Google_GenerativeAI?tab=readme-ov-file#1-using-google-ai
-                // Δημιουργία του GenerativeModel με το καθορισμένο μοντέλο. Δινω μονο την πρώτη παράμετρο. todo να χρησιμοποιήσω το systemInstruction 
+                // Δημιουργία του GenerativeModel με το καθορισμένο μοντέλο. Δινω μονο την πρώτη παράμετρο. (να χρησιμοποιήσω το systemInstruction?)
                 var model = googleAI.CreateGenerativeModel(modelName);
 
 

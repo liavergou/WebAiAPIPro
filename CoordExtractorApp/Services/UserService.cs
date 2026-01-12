@@ -28,8 +28,14 @@ namespace CoordExtractorApp.Services
 ﻿            this.mapper = mapper;
 ﻿            this.keycloakAdminService = keycloakAdminService;
 ﻿        }
-﻿
-﻿        public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
+
+        /// <summary>
+        /// Retrieves a user by their unique identifier from the local database.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <returns>A DTO containing user details.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
+        public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
 ﻿        {
 ﻿            User? user = null;
 ﻿            try
@@ -49,8 +55,14 @@ namespace CoordExtractorApp.Services
                 throw;
 ﻿            }
 ﻿        }
-﻿
-﻿        public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
+
+        /// <summary>
+        /// Retrieves a user by their username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns>A DTO containing user details.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>﻿
+        public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
 ﻿        {
 ﻿            try
 ﻿            {
@@ -69,6 +81,10 @@ namespace CoordExtractorApp.Services
 ﻿            }
 ﻿        }
 
+        /// <summary>
+        /// Retrieves all users from the system.
+        /// </summary>
+        /// <returns>A list of all users ordered by username.</returns>
         public async Task<List<UserReadOnlyDTO>> GetAllUsersAsync()
         {
             var users = await unitOfWork.UserRepository.GetAllAsync();
@@ -79,7 +95,13 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
-
+        /// <summary>
+        /// Retrieves a paginated and filtered list of users.
+        /// </summary>
+        /// <param name="pageNumber">The page number.</param>
+        /// <param name="pageSize">The page size.</param>
+        /// <param name="userFiltersDTO">Filters for username and role.</param>
+        /// <returns>A paginated result containing users.</returns>
         public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize, 
              UserFiltersDTO userFiltersDTO)
 ﻿        {
@@ -106,8 +128,15 @@ namespace CoordExtractorApp.Services
 ﻿            logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
 ﻿            return dtoResult;
 ﻿        }
-﻿
-﻿        public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userUpdateDto)
+
+        /// <summary>
+        /// Updates an existing user's details and role in both Keycloak and the local database.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <param name="userUpdateDto">The updated user data.</param>
+        /// <returns>True if the update was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>﻿
+        public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userUpdateDto)
 ﻿        {
 ﻿            try
 ﻿            {
@@ -146,8 +175,15 @@ namespace CoordExtractorApp.Services
 ﻿                throw;
 ﻿            }
 ﻿        }
-﻿        
-﻿        public async Task<bool> DeleteUserAsync(int id)
+
+        /// <summary>
+        /// Deletes a user from Keycloak and the local database.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <returns>True if deletion was successful.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
+        /// <exception cref="DeletionForbiddenException">Thrown if the user has associated conversion jobs.</exception>
+        public async Task<bool> DeleteUserAsync(int id)
 ﻿        {
 ﻿            try
 ﻿            {
@@ -192,9 +228,16 @@ namespace CoordExtractorApp.Services
             }
 
 ﻿        }
-﻿        
+
+        /// <summary>
+        /// Constructs the application user model by combining identifying information from the authenticated user's Keycloak claims (personal details) with role and ID information from the local database.
+        /// </summary>
+        /// <param name="user">The claims principal of the authenticated user.</param>
+        /// <returns>The application user model containing merged data.</returns>
+        /// <exception cref="EntityNotAuthorizedException">Thrown if authentication fails or user is not found.</exception>
+
         //μικτό profile για Base controller
-﻿        public async Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user)
+        public async Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user)
 ﻿        {
 ﻿            if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
 ﻿            {
@@ -229,7 +272,14 @@ namespace CoordExtractorApp.Services
 ﻿            
 ﻿            return applicationUser;
 ﻿        }
-
+        /// <summary>
+        /// Creates a new user in Keycloak, assigns a role, and save to the local database.
+        /// </summary>
+        /// <param name="userCreateDTO">The new user data.</param>
+        /// <returns>A read-only DTO of the created user.</returns>
+        /// <exception cref="InvalidArgumentException">Thrown if username or role is missing.</exception>
+        /// <exception cref="EntityAlreadyExistsException">Thrown if the username already exists.</exception>
+        /// <exception cref="KeycloakException">Thrown if Keycloak operations fail.</exception>
         public async Task<UserReadOnlyDTO> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO)
         {
             try

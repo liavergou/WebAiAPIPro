@@ -1,6 +1,4 @@
-﻿
-using CoordExtractorApp.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using CoordExtractorApp.Data;
 
 namespace CoordExtractorApp.Repositories
 {

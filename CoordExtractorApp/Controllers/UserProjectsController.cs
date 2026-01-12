@@ -6,6 +6,9 @@ using CoordExtractorApp.Exceptions;
 
 namespace CoordExtractorApp.Controllers
 {
+    /// <summary>
+    /// Manages assigned projects for the current user
+    /// </summary>
     [ApiController]
     [Route("api/account")]
     public class UserProjectsController : BaseController
@@ -15,6 +18,10 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Get projects assigned to the current logged-in user
+        /// </summary>
+        /// <returns>List of assigned projects</returns>
         //GET USER PROJECTS FOR LOGGED IN USER
         //GET /api/account/projects
         [HttpGet("projects")]

@@ -2,6 +2,15 @@
 {
     public class FileHelper
     {
+        /// <summary>
+        /// Saves an image file to the disk within a project-specific subdirectory.
+        /// </summary>
+        /// <param name="imageBytes">The raw bytes of the image file.</param>
+        /// <param name="originalFileName">The original filename (used to determine extension).</param>
+        /// <param name="projectId">The ID of the project (used for folder organization).</param>
+        /// <param name="configuration">The application configuration (for storage paths).</param>
+        /// <returns>The unique filename of the saved image.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the storage path is not configured.</exception>
 
         public static async Task<string> SaveImageFromBytesAsync(byte[] imageBytes, string originalFileName, int projectId, IConfiguration configuration)
 
@@ -34,6 +43,13 @@
             return uniqueFileName;
         }
 
+        /// <summary>
+        /// Moves an image file to a "deleted" subdirectory instead of permanently deleting it (Soft Delete).
+        /// </summary>
+        /// <param name="croppedFileName">The name of the file to move.</param>
+        /// <param name="projectId">The id of the project.</param>
+        /// <param name="configuration">The application configuration.</param>
+        /// <returns>True if the file was successfully moved; otherwise, false.</returns>
         public static bool MoveImageToDeleted(string? croppedFileName, int projectId, IConfiguration configuration)
         {
 

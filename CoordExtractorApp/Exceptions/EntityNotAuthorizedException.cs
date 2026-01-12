@@ -3,6 +3,9 @@
 // Κληρονομεί από την `AppException` για να ενσωματωθεί στο γενικό σύστημα διαχείρισης σφαλμάτων.
 namespace CoordExtractorApp.Exceptions
 {
+    /// <summary>
+    /// Exception thrown when a user attempts to perform an action they are not authorized for.
+    /// </summary>
     public class EntityNotAuthorizedException : AppException
     {
       

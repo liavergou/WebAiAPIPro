@@ -16,6 +16,16 @@ namespace CoordExtractorApp.Services.Geoserver
             this.configuration = configuration;
         }
 
+        /// <summary>
+        /// Retrieves the conversion jobs for a specific project from GeoServer as GeoJSON.
+        /// </summary>
+        /// <param name="projectId">The project ID to filter jobs.</param>
+        /// <param name="username">The username for Keycloak authentication.</param>
+        /// <param name="role">The user role for Keycloak authentication.</param>
+        /// <returns>A string containing the GeoJSON response from GeoServer.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if GeoServer configuration is missing.</exception>
+        /// <exception cref="EntityNotAuthorizedException">Thrown if username or role were not provided.</exception>
+        /// <exception cref="ServerException">Thrown if the connection to GeoServer fails or returns an error.</exception>
         public async Task<string> GetProjectJobsGeoserverAsync(int projectId, string? username, string? role)
         {
             string baseUrl = configuration["Geoserver:BaseUrl"] ?? throw new InvalidOperationException("Geoserver:BaseUrl configuration is missing.");

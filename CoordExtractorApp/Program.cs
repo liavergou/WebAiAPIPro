@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Serilog;
 
 

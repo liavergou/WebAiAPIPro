@@ -10,16 +10,25 @@ using Newtonsoft.Json.Linq;
 
 namespace CoordExtractorApp.Controllers
 {
+    /// <summary>
+    /// Manages projects and their associated conversion jobs
+    /// </summary>
     
-    [ApiController]    
+    [ApiController]
     [Route("api/projects")] // Base route: /api/projects
-  
+
     public class ProjectController : BaseController
     {
         public ProjectController(IApplicationService applicationService) : base(applicationService)
         {
 
         }
+
+        /// <summary>
+        /// Creates a new project
+        /// </summary>
+        /// <param name="projectCreateDTO">Project creation data</param>
+        /// <returns>The created project</returns>
 
         //CREATE PROJECT
         //POST /api/projects
@@ -35,7 +44,12 @@ namespace CoordExtractorApp.Controllers
             return CreatedAtAction(nameof(GetProjectById), new { id = projectDTO.Id }, projectDTO);
         }
 
-
+        /// <summary>
+        /// Get a project by id
+        /// </summary>
+        /// <param name="id">Project id</param>
+        /// <returns>Project details</returns>
+        
         //GET PROJECT BY ID
         //GET /api/projects/{id}
         [HttpGet("{id}")]
@@ -48,6 +62,10 @@ namespace CoordExtractorApp.Controllers
             return Ok(projectDTO);
         }
 
+        /// <summary>
+        /// Get all projects (Admin/Manager only)
+        /// </summary>
+        /// <returns>List of all projects</returns>
         //GET ALL PROJECTS (για τα project cards, μόνο admin manager. οι member θα το παρουν απο το userProject controller)
         // GET /api/projects/all
         [HttpGet("all")]
@@ -59,7 +77,14 @@ namespace CoordExtractorApp.Controllers
             return Ok(projects);
         }
 
-
+        /// <summary>
+        /// Get paginated projects with optional filtering
+        /// </summary>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Items per page</param>
+        /// <param name="projectName">project name filter (optional)</param>
+        /// <returns>Paginated project list</returns>
+        
         //GET ALL PROJECTS paginated για το management
         // GET /api/projects?pageNumber=1&pageSize=10
         [HttpGet]
@@ -86,6 +111,12 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Updates an existing project
+        /// </summary>
+        /// <param name="id">Project id</param>
+        /// <param name="projectUpdateDto">Updated project data</param>
+        /// <returns>No content</returns>
         //UPDATE PROJECT
         //PUT /api/projects/{id}
         [HttpPut("{id}")]
@@ -101,6 +132,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes a project
+        /// </summary>
+        /// <param name="id">Project id</param>
+        /// <returns>No content</returns>
         //DELETE PROJECT
         //DELETE /api/projects/{id}
         [HttpDelete("{id}")]
@@ -115,7 +151,11 @@ namespace CoordExtractorApp.Controllers
             return NoContent();
         }
 
-
+        /// <summary>
+        /// Get conversion jobs for a project as GeoJSON
+        /// </summary>
+        /// <param name="id">Project id</param>
+        /// <returns>GeoJSON feature collection</returns>
         //GET GEOSERVER JOBS GEOJSON BY PROJECT ID
         //GET /api/projects/{id}/conversion-jobs
         [HttpGet("{id}/conversion-jobs")]
@@ -132,6 +172,11 @@ namespace CoordExtractorApp.Controllers
             return Content(geoJson, "application/json");
         }
 
+        /// <summary>
+        /// Export conversion jobs for a project as Shapefile
+        /// </summary>
+        /// <param name="id">Project id</param>
+        /// <returns>Shapefile in ZIP format</returns>
         //GET GEOSERVER JOBS SHP BY PROJECT ID
         //GET /api/projects/{id}/jobs/shp
         [HttpGet("{id}/conversion-jobs/shp")]
@@ -147,6 +192,12 @@ namespace CoordExtractorApp.Controllers
             return File(shp, "application/zip", $"project_{id}.zip");
         }
 
+        /// <summary>
+        /// Creates a new conversion job for a project
+        /// </summary>
+        /// <param name="projectId">Project id</param>
+        /// <param name="dto">Conversion job data (image file and settings)</param>
+        /// <returns>The created conversion job with processing results</returns>
         //CREATE CONVERSION JOB
         //POST /api/projects/{projectId}/conversion-jobs/new
         [HttpPost("{projectId}/conversion-jobs/new")]
@@ -169,6 +220,12 @@ namespace CoordExtractorApp.Controllers
             return Ok(resultDto);
         }
 
+        /// <summary>
+        /// Get a conversion job by id
+        /// </summary>
+        /// <param name="projectId">Project id</param>
+        /// <param name="jobId">Conversion job id</param>
+        /// <returns>Conversion job details</returns>
         //GET CONVERSION JOB BY ID
         //GET /api/projects/{projectId}/conversion-jobs/{jobId}
         [HttpGet("{projectId}/conversion-jobs/{jobId}")]
@@ -183,6 +240,13 @@ namespace CoordExtractorApp.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Updates a conversion job
+        /// </summary>
+        /// <param name="projectId">Project id</param>
+        /// <param name="jobId">Conversion job id</param>
+        /// <param name="dto">Updated conversion job data</param>
+        /// <returns>The updated conversion job</returns>
         //UPDATE CONVERSION JOB
         //PUT /api/projects/{projectId}/conversion-jobs/{jobId}
         [HttpPut("{projectId}/conversion-jobs/{jobId}")]
@@ -199,6 +263,12 @@ namespace CoordExtractorApp.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Deletes a conversion job
+        /// </summary>
+        /// <param name="projectId">Project id</param>
+        /// <param name="jobId">Conversion job id</param>
+        /// <returns>No content</returns>
         //DELETE CONVERSION JOB
         //DELETE /api/projects/{projectId}/conversion-jobs/{jobId}
         [HttpDelete("{projectId}/conversion-jobs/{jobId}")]

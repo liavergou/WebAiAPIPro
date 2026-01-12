@@ -1,9 +1,6 @@
-﻿using CoordExtractorApp.Data;
-using CoordExtractorApp.Models;
-using CoordExtractorApp.Repositories;
+﻿using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CoordExtractorApp.Controllers
     //ο PolicyDecisionPoint είναι ο external Keycloak server ενω ο base controller εχει τη θεση του PolicyEnforcementPoint

@@ -1,5 +1,8 @@
 ﻿namespace CoordExtractorApp.Exceptions
 {
+    /// <summary>
+    /// Base exception class for the application.
+    /// </summary>
     public abstract class AppException : Exception
     {
         public string Code { get; set; }

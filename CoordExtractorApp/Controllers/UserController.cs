@@ -1,16 +1,15 @@
 using CoordExtractorApp.Core.Filters;
-using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
-using CoordExtractorApp.DTO.Keycloak;
-using CoordExtractorApp.Exceptions;
 using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
-using CoordExtractorApp.Services.Keycloak;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoordExtractorApp.Controllers
 {
+    /// <summary>
+    /// Manages users and their project assignments
+    /// </summary>
     [ApiController]
     [Route("api/users")] // Base route: /api/users
     public class UserController : BaseController
@@ -24,6 +23,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Creates a new user in both Keycloak and local database
+        /// </summary>
+        /// <param name="userCreateDto">User creation data</param>
+        /// <returns>The created user</returns>
         //CREATE USER
         //POST /api/users
         [HttpPost]
@@ -42,6 +46,12 @@ namespace CoordExtractorApp.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id = dto.Id }, dto);
         }
 
+        /// <summary>
+        /// Updates an existing user
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <param name="userUpdateDto">Updated user data</param>
+        /// <returns>No content</returns>
         //UPDATE USERT
         //PUT /api/users/{id}
         [HttpPut("{id}")]
@@ -58,6 +68,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes a user from both Keycloak and local database
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <returns>No content</returns>
         //DELETE USER
         // DELETE /api/users/{id}
         [HttpDelete("{id}")]
@@ -74,6 +89,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Get a user by id
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <returns>User details</returns>
         //GET USER BY ID
         // GET /api/users/{id}
         [HttpGet("{id}", Name = "GetUserById")]
@@ -87,6 +107,10 @@ namespace CoordExtractorApp.Controllers
             return Ok(dto); //Success 200 OK
         }
 
+        /// <summary>
+        /// Get all users (Admin/Manager only)
+        /// </summary>
+        /// <returns>List of all users</returns>
         //GET ALL USERS
         // GET /api/users
         [HttpGet]
@@ -98,6 +122,12 @@ namespace CoordExtractorApp.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// Get paginated users with optional filtering
+        /// </summary>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Items per page</param>
+        /// <returns>Paginated user list</returns>
         //GET ALL USERS paginated
         // GET /api/users?pageNumber=1&pageSize=10
         [HttpGet("paginated")]
@@ -122,6 +152,11 @@ namespace CoordExtractorApp.Controllers
 
         }
 
+        /// <summary>
+        /// Get projects assigned to a user
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <returns>List of project IDs</returns>
         //GET PROJECTS BY USER ID
         // GET /api/users/{id}/projects
         [HttpGet("{id}/projects")]
@@ -134,6 +169,12 @@ namespace CoordExtractorApp.Controllers
             return Ok(dto);
         }
 
+        /// <summary>
+        /// Updates project assignments for a user
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <param name="dto">Updated project assignments</param>
+        /// <returns>Updated user projects</returns>
         //UPDATE USERPROJECTS
         //PUT /api/users/{id}/projects
         [HttpPut("{id}/projects")]

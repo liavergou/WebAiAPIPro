@@ -5,6 +5,10 @@ using System.Net;
 
 namespace CoordExtractorApp.Helpers
 {
+    /// <summary>
+    /// Global exception handling middleware.
+    /// Catches all unhandled exceptions, logs them with detailed context, and returns a consistent JSON error response.
+    /// </summary>
     public class ErrorHandlerMiddleware
     {
         //αν ο controller δώσει exception θα επιστραφεί στον handler
@@ -13,11 +17,20 @@ namespace CoordExtractorApp.Helpers
 
         private readonly RequestDelegate next;
 
+        /// <summary>
+        /// Initializes a new instance of the ErrorHandlerMiddleware class.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
         public ErrorHandlerMiddleware(RequestDelegate next)
         {
             this.next = next;
         }
 
+        /// <summary>
+        /// Invokes the middleware operation.
+        /// Wraps the request execution in a try-catch block to handle exceptions.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
         public async Task Invoke(HttpContext context)
         {
             try

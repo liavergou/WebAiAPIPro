@@ -10,6 +10,13 @@ namespace CoordExtractorApp.Configuration
         //https://www.keycloak.org/docs-api/latest/rest-api/index.html
         // https://dev.to/kayesislam/integrating-openid-connect-to-your-application-stack-25chservices
         //https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions?view=aspnetcore-8.0
+
+        /// <summary>
+        /// Configures Keycloak JWT Authentication services for the application.
+        /// </summary>
+        /// <param name="services">The service collection to add authentication to.</param>
+        /// <param name="configuration">The application configuration.</param>
+        /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddKeycloakAuthentication
             (this IServiceCollection services, IConfiguration configuration)
         {

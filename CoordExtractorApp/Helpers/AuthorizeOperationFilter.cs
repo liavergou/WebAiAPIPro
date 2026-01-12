@@ -6,6 +6,11 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace CoordExtractorApp.Helpers
 {
     /// <summary>
+    /// Configures Swagger/OpenAPI to correctly display JWT authentication requirements and role-based permissions.
+    /// </summary>
+    /// <remarks>
+    
+    /// <summary>
     /// /// Εξασφαλίζει ότι το swagger ui δείχνει σωστά την απαίτηση για σύνδεση token και δικαιώματα roles
     /// /// Προσθέτει κουμπί για να εισάγουμε το JWT Token
     /// /// Εμφανίζει τα σφάλματα 401 και 403 για ενημέρωση του χρήστη

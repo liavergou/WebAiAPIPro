@@ -1,16 +1,14 @@
-﻿using Azure;
-using CoordExtractorApp.DTO.Keycloak;
-using GenerativeAI.Types;
-using Microsoft.Extensions.Caching.Memory;
-using Serilog.Data;
+﻿using CoordExtractorApp.DTO.Keycloak;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
 namespace CoordExtractorApp.Services.Keycloak
 ﻿{
+    /// <summary>
+    /// Implementation of Keycloak admin service using Keycloak Admin REST API
+    /// </summary>
 
-    //Service για την επικοινωνία με το Keycloak Admin Rest API
     //https://dev.to/kayesislam/integrating-openid-connect-to-your-application-stack-25ch (java)
     //https://stackoverflow.com/questions/77084743/secure-asp-net-core-rest-api-with-keycloak
 
@@ -45,6 +43,12 @@ namespace CoordExtractorApp.Services.Keycloak
             return (client, adminApiUrl!);
         }
 
+        /// <summary>
+        /// Creates a new user in Keycloak.
+        /// </summary>
+        /// <param name="keycloakUser">The DTO containing user details.</param>
+        /// <returns>The ID of the created user, or null if creation failed.</returns>
+        
         //CREATE KEYCLOAK USER - POST /admin/realms/{realm}/users
         public async Task<string?> CreateUserAsync(KeycloakUserDTO keycloakUser) //dto του User που θα πάει στο Keycloak
         {
@@ -80,6 +84,12 @@ namespace CoordExtractorApp.Services.Keycloak
             return null;      
         }
 
+        /// <summary>
+        /// Assigns a role to a user in Keycloak.
+        /// </summary>
+        /// <param name="userId">The Keycloak user ID.</param>
+        /// <param name="roleName">The name of the role to assign.</param>
+        /// <returns>True if the role was assigned successfully.</returns>
         //ASSIGN ROLE TO USER
         public async Task<bool> AssignUserRoleToUserAsync(string userId, string roleName) //role σε string (custom mapping)
         {
@@ -117,6 +127,13 @@ namespace CoordExtractorApp.Services.Keycloak
             return assignResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Updates a user's details (e.g., name, email) in Keycloak.
+        /// </summary>
+        /// <param name="keycloakId">The Keycloak user ID.</param>
+        /// <param name="userUpdateDto">The DTO containing updated details.</param>
+        /// <returns>True if the update was successful.</returns>
+        
         //USER KEYCLOAK UPDATE
         public async Task<bool> UpdateUserDetailsAsync(string keycloakId, DTO.UserUpdateDTO userUpdateDto)
 ﻿        {
@@ -148,7 +165,13 @@ namespace CoordExtractorApp.Services.Keycloak
 
             return updateResponse.IsSuccessStatusCode;
 ﻿        }
-        
+
+        /// <summary>
+        /// Updates a user's role in Keycloak by removing existing roles and assigning the new one.
+        /// </summary>
+        /// <param name="keycloakId">The Keycloak user ID.</param>
+        /// <param name="newRoleName">The new role name.</param>
+        /// <returns>True if the update was successful.</returns>
         
         //UPDATE USER ROLE
         public async Task<bool> UpdateUserRoleAsync(string keycloakId, string newRoleName)
@@ -189,6 +212,12 @@ namespace CoordExtractorApp.Services.Keycloak
             return addResponse.IsSuccessStatusCode;
 ﻿                }
 
+        /// <summary>
+        /// Deletes a user from Keycloak.
+        /// </summary>
+        /// <param name="keycloakId">The Keycloak user ID.</param>
+        /// <returns>True if deletion was successful.</returns>
+        
         public async Task<bool> DeleteUserAsync(string keycloakId)
         {
             var context = await this.GetAdminHttpClientAsync();

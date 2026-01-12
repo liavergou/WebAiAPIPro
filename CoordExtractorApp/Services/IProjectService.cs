@@ -1,5 +1,4 @@
 ﻿using CoordExtractorApp.Core.Filters;
-using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Models;
 

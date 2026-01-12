@@ -1,5 +1,9 @@
 ﻿namespace CoordExtractorApp.Models
 {
+    /// <summary>
+    /// Represents a generic paginated result set used for API responses.
+    /// </summary>
+    /// <typeparam name="T">The type of the data contained in the result list (e.g., User, Project).</typeparam>
     public class PaginatedResult<T>
     {
         

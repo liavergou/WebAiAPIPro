@@ -1,7 +1,5 @@
 ﻿using CoordExtractorApp.Data;
-using CoordExtractorApp.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Repositories
 {
