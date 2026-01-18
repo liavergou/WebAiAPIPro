@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:16.2
+    container_name: keycloak_postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: <YOUR_DB_USER>
+      POSTGRES_PASSWORD: <YOUR_DB_PASSWORD>
+    networks:
+      - keycloak_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak_server
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: <YOUR_DB_USER>
+      KC_DB_PASSWORD: <YOUR_DB_PASSWORD>
+      KEYCLOAK_ADMIN: <ADMIN_USER>
+      KEYCLOAK_ADMIN_PASSWORD: <ADMIN_PASSWORD>
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+    volumes:
+      - ./imports:/opt/keycloak/data/import
+    depends_on:
+      - postgres
+    command: start --import-realm
+    networks:
+      - keycloak_network
+
+volumes:
+  postgres_data:
+
+networks:
+  keycloak_network:
+    driver: bridge

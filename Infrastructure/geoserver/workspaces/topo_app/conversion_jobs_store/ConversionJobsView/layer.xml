@@ -1,0 +1,22 @@
+<layer>
+  <name>ConversionJobsView</name>
+  <id>LayerInfoImpl--1916c0c8:19b07b34587:-7ffd</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl--5af7f4fd:19ae51f7eff:-7ff6</id>
+  </defaultStyle>
+  <styles class="linked-hash-set">
+    <style>
+      <id>StyleInfoImpl--5af7f4fd:19ae51f7eff:-7ff6</id>
+    </style>
+  </styles>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl--1916c0c8:19b07b34587:-7ffe</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-12-10 10:37:10.535 UTC</dateCreated>
+  <dateModified>2025-12-18 08:56:45.957 UTC</dateModified>
+</layer>

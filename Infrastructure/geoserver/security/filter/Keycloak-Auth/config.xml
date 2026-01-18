@@ -1,0 +1,8 @@
+<requestHeaderAuthentication>
+  <id>525f7ac:19afa431d63:-7ffc</id>
+  <name>Keycloak-Auth</name>
+  <className>org.geoserver.security.filter.GeoServerRequestHeaderAuthenticationFilter</className>
+  <roleSource class="org.geoserver.security.config.PreAuthenticatedUserNameFilterConfig$PreAuthenticatedUserNameRoleSource">Header</roleSource>
+  <rolesHeaderAttribute>Keycloak-Role</rolesHeaderAttribute>
+  <principalHeaderAttribute>Keycloak-User</principalHeaderAttribute>
+</requestHeaderAuthentication>

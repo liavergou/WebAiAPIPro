@@ -1,0 +1,207 @@
+<featureType>
+  <id>FeatureTypeInfoImpl--1916c0c8:19b07b34587:-7ffe</id>
+  <name>ConversionJobsView</name>
+  <nativeName>ConversionJobsView</nativeName>
+  <namespace>
+    <id>NamespaceInfoImpl-4a46cbdb:19ab7c73705:-7fff</id>
+  </namespace>
+  <title>ConversionJobsView</title>
+  <keywords>
+    <string>features</string>
+    <string>ConversionJobsView</string>
+  </keywords>
+  <nativeCRS class="projected">PROJCS[&quot;GGRS87 / Greek Grid&quot;, &#xd;
+  GEOGCS[&quot;GGRS87&quot;, &#xd;
+    DATUM[&quot;Greek Geodetic Reference System 1987&quot;, &#xd;
+      SPHEROID[&quot;GRS 1980&quot;, 6378137.0, 298.257222101, AUTHORITY[&quot;EPSG&quot;,&quot;7019&quot;]], &#xd;
+      TOWGS84[-199.87, 74.79, 246.62, 0.0, 0.0, 0.0, 0.0], &#xd;
+      AUTHORITY[&quot;EPSG&quot;,&quot;6121&quot;]], &#xd;
+    PRIMEM[&quot;Greenwich&quot;, 0.0, AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]], &#xd;
+    UNIT[&quot;degree&quot;, 0.017453292519943295], &#xd;
+    AXIS[&quot;Geodetic longitude&quot;, EAST], &#xd;
+    AXIS[&quot;Geodetic latitude&quot;, NORTH], &#xd;
+    AUTHORITY[&quot;EPSG&quot;,&quot;4121&quot;]], &#xd;
+  PROJECTION[&quot;Transverse_Mercator&quot;, AUTHORITY[&quot;EPSG&quot;,&quot;9807&quot;]], &#xd;
+  PARAMETER[&quot;central_meridian&quot;, 24.0], &#xd;
+  PARAMETER[&quot;latitude_of_origin&quot;, 0.0], &#xd;
+  PARAMETER[&quot;scale_factor&quot;, 0.9996], &#xd;
+  PARAMETER[&quot;false_easting&quot;, 500000.0], &#xd;
+  PARAMETER[&quot;false_northing&quot;, 0.0], &#xd;
+  UNIT[&quot;m&quot;, 1.0], &#xd;
+  AXIS[&quot;Easting&quot;, EAST], &#xd;
+  AXIS[&quot;Northing&quot;, NORTH], &#xd;
+  AUTHORITY[&quot;EPSG&quot;,&quot;2100&quot;]]</nativeCRS>
+  <srs>EPSG:2100</srs>
+  <nativeBoundingBox>
+    <minx>207448.41</minx>
+    <maxx>505298.97</maxx>
+    <miny>4185563.85</miny>
+    <maxy>4288158.138</maxy>
+    <crs class="projected">EPSG:2100</crs>
+  </nativeBoundingBox>
+  <latLonBoundingBox>
+    <minx>95025.32180331409</minx>
+    <maxx>893082.6648485053</maxx>
+    <miny>3859737.5791553487</miny>
+    <maxy>4631512.043995857</maxy>
+    <crs>EPSG:4326</crs>
+  </latLonBoundingBox>
+  <projectionPolicy>NONE</projectionPolicy>
+  <enabled>true</enabled>
+  <metadata>
+    <entry key="elevation">
+      <dimensionInfo>
+        <enabled>false</enabled>
+      </dimensionInfo>
+    </entry>
+    <entry key="JDBC_VIRTUAL_TABLE">
+      <virtualTable>
+        <name>ConversionJobsView</name>
+        <sql>SELECT c.&quot;Id&quot; AS &quot;JobId&quot;,&#xd;
+c.&quot;OriginalFileName&quot; AS &quot;OriginalFile&quot;,&#xd;
+c.&quot;CroppedFileName&quot; AS &quot;CroppedFile&quot;,&#xd;
+c.&quot;ModelUsed&quot; AS &quot;GenAIModel&quot;,&#xd;
+c.&quot;UserId&quot;,&#xd;
+u.&quot;Username&quot; AS &quot;Username&quot;,&#xd;
+c.&quot;Status&quot; AS &quot;JobStatus&quot;,&#xd;
+ST_SetSRID(c.&quot;Geom&quot;, 2100) AS &quot;Geom&quot;,&#xd;
+c.&quot;ProjectId&quot; AS &quot;ProjectId&quot;,&#xd;
+p.&quot;ProjectName&quot; AS &quot;ProjectName&quot;,&#xd;
+pr.&quot;PromptName&quot; AS &quot;PromptName&quot;,&#xd;
+c.&quot;DeletedAt&quot; AS &quot;DeletedAt&quot;&#xd;
+FROM&#xd;
+    &quot;ConversionJobs&quot; AS c&#xd;
+INNER JOIN&#xd;
+    &quot;Projects&quot; AS p ON c.&quot;ProjectId&quot; = p.&quot;Id&quot;&#xd;
+INNER JOIN&#xd;
+    &quot;Prompts&quot; AS pr ON c.&quot;PromptId&quot; = pr.&quot;Id&quot;&#xd;
+INNER JOIN&#xd;
+    &quot;Users&quot; AS u ON c.&quot;UserId&quot; = u.&quot;Id&quot;&#xd;
+WHERE&#xd;
+c.&quot;Status&quot;=&apos;Completed&apos;
+</sql>
+        <escapeSql>false</escapeSql>
+        <geometry>
+          <name>Geom</name>
+          <type>Geometry</type>
+          <srid>-1</srid>
+        </geometry>
+      </virtualTable>
+    </entry>
+    <entry key="time">
+      <dimensionInfo>
+        <enabled>false</enabled>
+      </dimensionInfo>
+    </entry>
+    <entry key="cachingEnabled">false</entry>
+  </metadata>
+  <store class="dataStore">
+    <id>DataStoreInfoImpl-525f7ac:19afa431d63:-8000</id>
+  </store>
+  <serviceConfiguration>false</serviceConfiguration>
+  <simpleConversionEnabled>false</simpleConversionEnabled>
+  <internationalTitle/>
+  <internationalAbstract/>
+  <maxFeatures>0</maxFeatures>
+  <numDecimals>0</numDecimals>
+  <padWithZeros>false</padWithZeros>
+  <forcedDecimal>false</forcedDecimal>
+  <attributes>
+    <attribute>
+      <name>JobId</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.Integer</binding>
+    </attribute>
+    <attribute>
+      <name>OriginalFile</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>CroppedFile</name>
+      <minOccurs>0</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>true</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>GenAIModel</name>
+      <minOccurs>0</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>true</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>UserId</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.Integer</binding>
+    </attribute>
+    <attribute>
+      <name>Username</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>JobStatus</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>Geom</name>
+      <minOccurs>0</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>true</nillable>
+      <binding>org.locationtech.jts.geom.Geometry</binding>
+    </attribute>
+    <attribute>
+      <name>ProjectId</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.Integer</binding>
+    </attribute>
+    <attribute>
+      <name>ProjectName</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>PromptName</name>
+      <minOccurs>1</minOccurs>
+      <maxOccurs>1</maxOccurs>
+      <nillable>false</nillable>
+      <binding>java.lang.String</binding>
+    </attribute>
+    <attribute>
+      <name>Area</name>
+      <minOccurs>0</minOccurs>
+      <maxOccurs>0</maxOccurs>
+      <binding>java.lang.Double</binding>
+      <source>round(area(Geom)*100)/100.0</source>
+      <description>
+        <en-US>εμβαδό σε τ.μ.</en-US>
+      </description>
+    </attribute>
+    <attribute>
+      <name>DeletedAt</name>
+      <minOccurs>0</minOccurs>
+      <maxOccurs>0</maxOccurs>
+      <binding>java.sql.Timestamp</binding>
+    </attribute>
+  </attributes>
+  <overridingServiceSRS>false</overridingServiceSRS>
+  <skipNumberMatched>false</skipNumberMatched>
+  <circularArcPresent>false</circularArcPresent>
+</featureType>
