@@ -278,8 +278,8 @@ dotnet publish -c Release -o "D:\Publish\Backend"
 
 ### Collection Structure
 
-| Folder | Requests | Περιγραφή |
-|--------|----------|-----------|
+| Folder | Requests |
+|--------|----------|
 | **Authentication** |Admin, Manager, Member login (Keycloak tokens) |
 | **Users** |CRUD operations, project assignments |
 | **Prompts** |prompt CRUD management |
