@@ -138,19 +138,12 @@ cd ..
 ### 2. Υποδομές
 
 #### Keycloak (Docker)
-Για εγκατάσταση και ρύθμιση του Keycloak:
-```bash
-# Αναλυτικές οδηγίες στο:
-Infrastructure/keycloak/README.md
-```
+Για εγκατάσταση και ρύθμιση του Keycloak: [Αναλυτικές οδηγίες](Infrastructure/keycloak/README.md)
+
 > **Περιλαμβάνει**: Realm `TopoApp`, 3 roles (Admin/Manager/Member), clients (web-api, react-app).
 
 #### GeoServer
-Για εγκατάσταση και ρύθμιση του GeoServer:
-```bash
-# Αναλυτικές οδηγίες στο:
-Infrastructure/geoserver/README.md
-```
+Για εγκατάσταση και ρύθμιση του GeoServer: [Αναλυτικές οδηγίες](Infrastructure/geoserver/README.md)
 ### 3. Βάση Δεδομένων (Postgres)
 1.  Βεβαιωθείτε ότι έχετε εγκατεστημένη την **PostgreSQL 18** (Local).
 2.  Δημιουργήστε μια κενή βάση δεδομένων με όνομα `coordextractordb`.
