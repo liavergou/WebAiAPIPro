@@ -3,8 +3,10 @@ using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Exceptions;
+using CoordExtractorApp.Helpers;
 using CoordExtractorApp.Models;
 using CoordExtractorApp.Repositories;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.Linq.Expressions;
 
@@ -14,13 +16,15 @@ namespace CoordExtractorApp.Services
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
+        private readonly IConfiguration configuration;
         private readonly ILogger<ProjectService> logger =
            new LoggerFactory().AddSerilog().CreateLogger<ProjectService>();
 
-        public ProjectService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ProjectService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -177,6 +181,9 @@ namespace CoordExtractorApp.Services
                 await unitOfWork.ProjectRepository.AddAsync(project);
 
                 await unitOfWork.SaveAsync(); //commit
+
+                // Δημιουργία φακέλων
+                FileHelper.CreateProjectFolders(project.Id, configuration);
 
                 //entity->dto
                 var dto = new ProjectDTO

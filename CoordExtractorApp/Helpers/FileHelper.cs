@@ -70,24 +70,51 @@
             var deletedPath = Path.Combine(projectPath, "deleted");
 
 
-                    if (!Directory.Exists(deletedPath))
-                {
-                    Directory.CreateDirectory(deletedPath);
-                }
-
-                var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName!);
-                var targetPath = Path.Combine(deletedPath, croppedFileName);
-
-                
-                    if (!File.Exists(sourcePath))
-                    {
-                        return false;
-                    }
-
-                    File.Move(sourcePath, targetPath);
-                    return true;
-
+            if (!Directory.Exists(deletedPath))
+            {
+                Directory.CreateDirectory(deletedPath);
             }
 
+            var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName!);
+            var targetPath = Path.Combine(deletedPath, croppedFileName);
+
+
+            if (!File.Exists(sourcePath))
+            {
+                return false;
+            }
+
+            File.Move(sourcePath, targetPath);
+            return true;
+
         }
+
+        /// <summary>
+        /// Creates initial folder structure for a new project
+        /// </summary>
+        /// <param name="projectId">The id of the project.</param>
+        /// <param name="configuration">The application configuration.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the storage path is not configured.</exception>
+        public static void CreateProjectFolders(int projectId, IConfiguration configuration)
+        {
+            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
+
+            //έλεγψος αν υπάρχει το storage path
+            if (storageRelativePath == null)
+            {
+                throw new InvalidOperationException("Storage path for images is not configured.");
+            }
+
+            var storagePath = Path.IsPathRooted(storageRelativePath) ? storageRelativePath : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath); //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
+            var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
+            var originalPath = Path.Combine(projectPath, "original");
+            var deletedPath = Path.Combine(projectPath, "deleted");
+
+            Directory.CreateDirectory(projectPath);
+            Directory.CreateDirectory(originalPath);
+            Directory.CreateDirectory(deletedPath);
+
+        }
+
     }
+}

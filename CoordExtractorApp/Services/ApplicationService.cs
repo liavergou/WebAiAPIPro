@@ -27,7 +27,7 @@ namespace CoordExtractorApp.Services
         }
 
         public IUserService UserService => new UserService(unitOfWork, mapper, keycloakAdminService);
-        public IProjectService ProjectService => new ProjectService(unitOfWork, mapper);
+        public IProjectService ProjectService => new ProjectService(unitOfWork, mapper, configuration);
         public IPromptService PromptService => new PromptService(unitOfWork, mapper);
 
         public IUserProjectsService UserProjectsService => new UserProjectsService(unitOfWork,mapper);
