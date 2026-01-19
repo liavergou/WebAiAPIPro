@@ -22,7 +22,7 @@
 10. [Testing & Documentation](#10-testing--documentation)
 
 ## 1. Περιγραφή
-Το WebAiAPI αποτελεί την backend υπηρεσία της εφαρμογής CoordAiExtractor. Αυτοματοποιεί την εξαγωγή πολυγώνων γεωτεμαχίων από εικόνες (jpg/png) πινάκων συντεταγμένων από τοπογραφικά διαγράμματα σε ΕΓΣΑ '87.
+Το WebAiAPI αποτελεί το REST API της εφαρμογής CoordAiExtractor. Αυτοματοποιεί την εξαγωγή πολυγώνων γεωτεμαχίων από εικόνες (jpg/png) πινάκων συντεταγμένων από τοπογραφικά διαγράμματα σε ΕΓΣΑ '87.
 Με την χρήση Google GenerativeAI και επιλεγμένου prompt τις μετατρέπει σε γεωχωρικά πολύγωνα (WKT) και παρέχει τις συντεταγμένες σε πίνακες, δίνοντας την δυνατότητα επεξεργασίας και οπτικοποίησης μέσω GeoServer και εξαγωγής σε Shapefile.
 
 ## 2. Αρχιτεκτονική
@@ -47,7 +47,7 @@ Layered Architecture με διαχωρισμό ευθυνών
 
 ### Authentication & Authorization
 - **Ενσωμάτωση Keycloak**: Αυθεντικοποίηση χρηστών με JWT Tokens και κεντρική διαχείριση (Users/Roles) μέσω Admin REST API.
-- **Service Authorization**: Το Backend επικοινωνεί με ασφάλεια (Client Credentials) με το Keycloak για τις διαχειριστικές ενέργειες.
+- **Service Authorization**: Επικοινωνεί με ασφάλεια (Client Credentials) με το Keycloak για τις διαχειριστικές ενέργειες.
 - **Role Based Access Control (RBAC)**:
   - **Admin,Manager**: Πλήρης πρόσβαση στο σύστημα, διαχείριση χρηστών,μελετών,prompts, καθώς και όλες οι λειτουργίες CRUD.
   - **Member**: Δημιουργία και διαχείριση conversion jobs σε μελέτες που του έχουν ανατεθεί.
@@ -144,6 +144,7 @@ cd ..
 
 #### GeoServer
 Για εγκατάσταση και ρύθμιση του GeoServer: [Αναλυτικές οδηγίες](Infrastructure/geoserver/README.md)
+
 ### 3. Βάση Δεδομένων (Postgres)
 1.  Βεβαιωθείτε ότι έχετε εγκατεστημένη την **PostgreSQL 18** (Local).
 2.  Δημιουργήστε μια κενή βάση δεδομένων με όνομα `coordextractordb`.
@@ -151,13 +152,9 @@ cd ..
     ```sql
     CREATE EXTENSION postgis;
     ```
-4.  Εφαρμόστε τα migrations από το **Package Manager Console** (Visual Studio):
-    ```powershell
-    Update-Database
-    ```
 
 ### 4. Ρυθμίσεις (Configuration)
-Ανοίξτε το αρχείο `CoordExtractorApp/appsettings.Development.json`. Συμπληρώστε τα παρακάτω πεδία:
+1. Ανοίξτε το αρχείο `CoordExtractorApp/appsettings.Development.json`. Συμπληρώστε τα παρακάτω πεδία:
 
 | Section | Key | Value (Development / Localhost) |
 | :--- | :--- | :--- |
@@ -168,6 +165,11 @@ cd ..
 | **Keycloak:AdminApi** | `ClientSecret` | Το Secret του `web-api` client από το Keycloak Admin. |
 | | `TokenUrl` | `http://localhost:8080/realms/TopoApp/protocol/openid-connect/token` |
 | | `AdminApiUrl` | `http://localhost:8080/admin/realms/TopoApp/` |
+
+2. Εφαρμόστε τα migrations από το **Package Manager Console** (Visual Studio):
+    ```powershell
+    Update-Database
+    ```
 
 
 ### 5. Εκτέλεση
