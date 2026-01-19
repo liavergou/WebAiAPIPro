@@ -5,7 +5,6 @@ namespace CoordExtractorApp.Repositories
 {
     public class ConversionJobRepository : BaseRepository<ConversionJob>, IConversionJobRepository
     {
-        //constructor
         public ConversionJobRepository(TopoDbContext context) : base(context)
         {
         }

@@ -1,5 +1,8 @@
 ﻿namespace CoordExtractorApp.Helpers
 {
+    /// <summary>
+    /// Helper class for file operations.
+    /// </summary>
     public class FileHelper
     {
         /// <summary>
@@ -11,35 +14,29 @@
         /// <param name="configuration">The application configuration (for storage paths).</param>
         /// <returns>The unique filename of the saved image.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the storage path is not configured.</exception>
-
         public static async Task<string> SaveImageFromBytesAsync(byte[] imageBytes, string originalFileName, int projectId, IConfiguration configuration)
-
         {
-            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
+            var storageRelativePath = configuration["StoragePaths:Images"];
 
-            //έλεγψος αν υπάρχει το storage path
             if (storageRelativePath == null)
             {
                 throw new InvalidOperationException("Storage path for images is not configured.");
             }
-            // αν ειναι relative path μετατροπή σε absolute path
-            var storagePath = Path.IsPathRooted(storageRelativePath) ? storageRelativePath : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath); //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
 
-            //δημιουργία subfolder για κάθε project πχ. Project_1 κλπ
+            var storagePath = Path.IsPathRooted(storageRelativePath)
+                ? storageRelativePath
+                : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath);
+
             var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
             Directory.CreateDirectory(projectPath);
 
-            //είδα και τα ticks αλλα λεει είναι not thread safe. Προσοχή ή θα επιλέξω {extension} ή παω απευθειας για png
             var extension = Path.GetExtension(originalFileName);
             var uniqueFileName = $"{Guid.NewGuid()}{extension}";
 
-            //Full Path
             var fullPath = Path.Combine(projectPath, uniqueFileName);
 
-            //save στον δίσκο
             await File.WriteAllBytesAsync(fullPath, imageBytes);
 
-            //για αποθηκευση στη βαση
             return uniqueFileName;
         }
 
@@ -52,23 +49,19 @@
         /// <returns>True if the file was successfully moved; otherwise, false.</returns>
         public static bool MoveImageToDeleted(string? croppedFileName, int projectId, IConfiguration configuration)
         {
+            var storageRelativePath = configuration["StoragePaths:Images"];
 
-            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
-
-            //έλεγψος αν υπάρχει το storage path
             if (storageRelativePath == null)
             {
                 throw new InvalidOperationException("Storage path for images is not configured.");
             }
 
-            // αν ειναι relative path μετατροπή σε absolute path
-            var storagePath = Path.IsPathRooted(storageRelativePath) //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
+            var storagePath = Path.IsPathRooted(storageRelativePath)
                 ? storageRelativePath
                 : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath);
 
             var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
             var deletedPath = Path.Combine(projectPath, "deleted");
-
 
             if (!Directory.Exists(deletedPath))
             {
@@ -78,7 +71,6 @@
             var sourcePath = Path.Combine(storagePath, $"Project_{projectId}", croppedFileName!);
             var targetPath = Path.Combine(deletedPath, croppedFileName);
 
-
             if (!File.Exists(sourcePath))
             {
                 return false;
@@ -86,26 +78,27 @@
 
             File.Move(sourcePath, targetPath);
             return true;
-
         }
 
         /// <summary>
-        /// Creates initial folder structure for a new project
+        /// Creates initial folder structure for a new project.
         /// </summary>
         /// <param name="projectId">The id of the project.</param>
         /// <param name="configuration">The application configuration.</param>
         /// <exception cref="InvalidOperationException">Thrown if the storage path is not configured.</exception>
         public static void CreateProjectFolders(int projectId, IConfiguration configuration)
         {
-            var storageRelativePath = configuration["StoragePaths:Images"]; //από appsettings
+            var storageRelativePath = configuration["StoragePaths:Images"];
 
-            //έλεγψος αν υπάρχει το storage path
             if (storageRelativePath == null)
             {
                 throw new InvalidOperationException("Storage path for images is not configured.");
             }
 
-            var storagePath = Path.IsPathRooted(storageRelativePath) ? storageRelativePath : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath); //Path.IsPathRooted https://learn.microsoft.com/en-us/dotnet/api/system.io.path.ispathrooted?view=net-8.0
+            var storagePath = Path.IsPathRooted(storageRelativePath)
+                ? storageRelativePath
+                : Path.Combine(Directory.GetCurrentDirectory(), storageRelativePath);
+
             var projectPath = Path.Combine(storagePath, $"Project_{projectId}");
             var originalPath = Path.Combine(projectPath, "original");
             var deletedPath = Path.Combine(projectPath, "deleted");
@@ -113,8 +106,6 @@
             Directory.CreateDirectory(projectPath);
             Directory.CreateDirectory(originalPath);
             Directory.CreateDirectory(deletedPath);
-
         }
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.GenerativeAI;
 using CoordExtractorApp.Services.Geoserver;
@@ -6,6 +6,9 @@ using CoordExtractorApp.Services.Keycloak;
 
 namespace CoordExtractorApp.Services
 {
+    /// <summary>
+    /// Central coordinator for all application services
+    /// </summary>
     public class ApplicationService : IApplicationService
     {
         private readonly IUnitOfWork unitOfWork;
@@ -23,14 +26,13 @@ namespace CoordExtractorApp.Services
             this.configuration = configuration;
             this.generativeAIService = generativeAIService;
             this.httpClientFactory = httpClientFactory;
-
         }
 
         public IUserService UserService => new UserService(unitOfWork, mapper, keycloakAdminService);
         public IProjectService ProjectService => new ProjectService(unitOfWork, mapper, configuration);
         public IPromptService PromptService => new PromptService(unitOfWork, mapper);
 
-        public IUserProjectsService UserProjectsService => new UserProjectsService(unitOfWork,mapper);
+        public IUserProjectsService UserProjectsService => new UserProjectsService(unitOfWork, mapper);
 
         public IConversionJobService ConversionJobService =>
             new ConversionJobService(
@@ -40,6 +42,6 @@ namespace CoordExtractorApp.Services
                 PromptService
             );
 
-        public IGeoserverService GeoserverService => new GeoserverService(httpClientFactory,configuration);
+        public IGeoserverService GeoserverService => new GeoserverService(httpClientFactory, configuration);
     }
 }

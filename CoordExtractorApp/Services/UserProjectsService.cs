@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
 using CoordExtractorApp.Exceptions;
@@ -7,6 +7,12 @@ using Serilog;
 
 namespace CoordExtractorApp.Services
 {
+    /// <summary>
+    /// Service implementation for managing user-project assignments.
+    /// Currently used to restrict Member role access to specific projects.
+    /// Admin and Manager roles access all projects via Project endpoints.
+    /// The service remains open for all roles for potential future extensibility.
+    /// </summary>
     public class UserProjectsService : IUserProjectsService
     {
         private readonly IUnitOfWork unitOfWork;
@@ -20,13 +26,7 @@ namespace CoordExtractorApp.Services
             this.mapper = mapper;
         }
 
-        /// <summary>
-        /// Retrieves the list of project IDs assigned to a specific user.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <returns>A DTO containing the list of assigned project IDs.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
-        public async Task<UserProjectsDTO>GetUserProjectsAsync(int id)
+        public async Task<UserProjectsDTO> GetUserProjectsAsync(int id)
         {
             User? user = null;
             try
@@ -43,9 +43,9 @@ namespace CoordExtractorApp.Services
                     ProjectIds = assignedProjectIds
                 };
 
-                logger.LogInformation("Retrieved {Count} projects for user {id}", id,assignedProjectIds.Count);
+                logger.LogInformation("Retrieved {Count} projects for user {id}", assignedProjectIds.Count, id);
 
-                return  dto;
+                return dto;
             }
             catch (EntityNotFoundException ex)
             {
@@ -54,11 +54,6 @@ namespace CoordExtractorApp.Services
             }        
         }
 
-        /// <summary>
-        /// Retrieves the list of Project objects assigned to a user (used for Project Cards).
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <returns>A list of read-only project DTOs.</returns>
         public async Task<List<ProjectReadOnlyDTO>> GetUserProjectsByUserIdAsync(int id)
         {
             var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(id);
@@ -71,18 +66,11 @@ namespace CoordExtractorApp.Services
 
             var dto = mapper.Map<List<ProjectReadOnlyDTO>>(projects);
 
-            logger.LogInformation("Retrieved {Count} projects for user {id}", id, assignedProjectIds.Count);
+            logger.LogInformation("Retrieved {Count} projects for user {id}", assignedProjectIds.Count, id);
 
             return dto;
         }
 
-        /// <summary>
-        /// Updates the project assignments for a user.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <param name="dto">The DTO containing the new list of project IDs.</param>
-        /// <returns>The updated UserProjectsDTO.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
         public async Task<UserProjectsDTO> UpdateUserProjectsAsync(int id, UserProjectsUpdateDTO dto)
         {
             try
@@ -97,16 +85,14 @@ namespace CoordExtractorApp.Services
 
                 await unitOfWork.SaveAsync();
 
-                logger.LogInformation($"Update {dto.ProjectIds.Count} projects for user {id}.", id, dto.ProjectIds.Count);
-                return await GetUserProjectsAsync(id); //επιστροφή των id των project. θα μπορουσα να κανω και list με project....
+                logger.LogInformation("Update {Count} projects for user {id}.", dto.ProjectIds.Count, id);
+                return await GetUserProjectsAsync(id);
             }
-
             catch (EntityNotFoundException ex)
             {
                 logger.LogError(
                     "Error updating projects for user {id}.{Message}", id, ex.Message);
                 throw;
-
             }
         }
     }

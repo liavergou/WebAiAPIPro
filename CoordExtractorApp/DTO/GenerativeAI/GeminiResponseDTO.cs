@@ -8,7 +8,7 @@ namespace CoordExtractorApp.DTO.GenerativeAI
     public class GeminiResponseDTO
     {
         /// <summary>
-        /// The Well-Known Text (WKT) representation of the extracted polygon.
+        /// The WKT (Well Known Text) of the extracted polygon
         /// </summary>
         [JsonPropertyName("wktOutput")] //ποιο πεδίο του json είναι
         public string WktPolygon { get; set; } = "";

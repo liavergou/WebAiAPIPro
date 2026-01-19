@@ -6,11 +6,6 @@ namespace CoordExtractorApp.Configuration
     public static class AuthenticationDIExtensions
     {
 
-        //Επέκταση του IServiceCollection με Keycloak JWT Authantication configuration
-        //https://www.keycloak.org/docs-api/latest/rest-api/index.html
-        // https://dev.to/kayesislam/integrating-openid-connect-to-your-application-stack-25chservices
-        //https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions?view=aspnetcore-8.0
-
         /// <summary>
         /// Configures Keycloak JWT Authentication services for the application.
         /// </summary>
@@ -20,20 +15,20 @@ namespace CoordExtractorApp.Configuration
         public static IServiceCollection AddKeycloakAuthentication
             (this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //ρυθμιση services και ρυθμιση middleware. 
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = configuration["Keycloak:Authority"]; //ρύθμιση του keycloak server. κατεβαζει το αρχειο metadata στο endpoint. παιρνει τις διευθυνσεις για τα keys για την κρυπτογράφηση. Την επίσημη τιμή για τον Issuer. Γι αυτο δεν βάζω ValidIssuer
-                    options.Audience = configuration["Keycloak:Audience"]; //ποιος χρησιμοποιεί το token                    
-                    options.RequireHttpsMetadata = false; //για να αγνοήσει το https (dev mode)
+                    options.Authority = configuration["Keycloak:Authority"];
+                    options.Audience = configuration["Keycloak:Audience"];               
+                    options.RequireHttpsMetadata = false;
 
-                    options.MapInboundClaims = false; //απενεργοποιηση της αυτόματης μετονομασίας των claims για να χρησιμοποιήσω τα ονόματα όπως τα βλέπω στο JWT
+                    options.MapInboundClaims = false;
 
-                    options.TokenValidationParameters = new TokenValidationParameters //ρύθμιση για την αναγνωση των roles
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = true, //ενεργοποιεί τον έλεγχο του issuer. λογω του .Authority, η .net κατεβαζει την τιμή του issuer απο τα metadata
+                        ValidateIssuer = true,
                         ValidateAudience = true,
-                        RoleClaimType = "role" //πως να διαβάσει τους ρόλους απο το token.
+                        RoleClaimType = "role"
                     };
                 });
             return services;

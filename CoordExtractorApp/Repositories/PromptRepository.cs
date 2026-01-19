@@ -9,13 +9,12 @@ namespace CoordExtractorApp.Repositories
 
 
     {
-        //constructor
         public PromptRepository(TopoDbContext context) : base(context) { }
 
         public async Task<Prompt?> GetPromptByPromptNameAsync(string promptName)
         {
             var prompt = await context.Prompts
-                .IgnoreQueryFilters() ////https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10 disabling filters Για check existing στο create update
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(p => p.PromptName == promptName);
             if (prompt == null) return null;
 

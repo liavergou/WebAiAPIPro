@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
@@ -10,6 +10,9 @@ using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Services
 {
+    /// <summary>
+    /// Service implementation for managing Prompts.
+    /// </summary>
     public class PromptService : IPromptService
     {
         private readonly IUnitOfWork unitOfWork;
@@ -17,19 +20,12 @@ namespace CoordExtractorApp.Services
         private readonly ILogger<PromptService> logger =
             new LoggerFactory().AddSerilog().CreateLogger<PromptService>();
 
-
         public PromptService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
 
-        /// <summary>
-        /// Retrieves a Prompt by its unique identifier.
-        /// </summary>
-        /// <param name="id">The prompt ID.</param>
-        /// <returns>A DTO containing the prompt details.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<PromptReadOnlyDTO?> GetPromptByIdAsync(int id)
         {
             Prompt? prompt = null;
@@ -52,17 +48,9 @@ namespace CoordExtractorApp.Services
             {
                 logger.LogError("Error retrieving prompt with ID: {Id}. {Message}", id, ex.Message);
                 throw;
-
             }
-
         }
 
-        /// <summary>
-        /// Retrieves a Prompt by its name.
-        /// </summary>
-        /// <param name="promptName">The name of the prompt.</param>
-        /// <returns>A DTO containing the prompt details.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<PromptReadOnlyDTO?> GetPromptByPromptNameAsync(string promptName)
         {
             try
@@ -85,10 +73,6 @@ namespace CoordExtractorApp.Services
             }
         }
 
-        /// <summary>
-        /// Retrieves all Prompts from the database.
-        /// </summary>
-        /// <returns>A list of all prompts ordered by ID.</returns>
         public async Task<List<PromptReadOnlyDTO>> GetAllPromtsAsync()
         {
             var prompts = await unitOfWork.PromptRepository.GetAllAsync();
@@ -99,13 +83,6 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
-        /// <summary>
-        /// Retrieves a paginated and filtered list of Prompts.
-        /// </summary>
-        /// <param name="pageNumber">The page number.</param>
-        /// <param name="pageSize">The page size.</param>
-        /// <param name="promptFilterDTO">Filter criteria (e.g., prompt name).</param>
-        /// <returns>A paginated result containing the prompts.</returns>
         public async Task<PaginatedResult<PromptReadOnlyDTO>> GetPaginatedPromptsAsync(int pageNumber, int pageSize,PromptFilterDTO promptFilterDTO)
         {
             try
@@ -122,7 +99,6 @@ namespace CoordExtractorApp.Services
 
                 var dto = new PaginatedResult<PromptReadOnlyDTO>
                 {
-                    //custom για εξασκηση
                     Data = result.Data.Select(p => new PromptReadOnlyDTO
                     {
                         Id = p.Id,
@@ -144,12 +120,6 @@ namespace CoordExtractorApp.Services
             }
         }
 
-        /// <summary>
-        /// Creates a new Prompt.
-        /// </summary>
-        /// <param name="promptCreateDTO">The data for the new prompt.</param>
-        /// <returns>The created prompt DTO.</returns>
-        /// <exception cref="EntityAlreadyExistsException">Thrown if a prompt with the same name already exists.</exception>
         public async Task<PromptReadOnlyDTO> CreatePromptAsync(PromptCreateDTO promptCreateDTO)
         {
             try
@@ -160,15 +130,12 @@ namespace CoordExtractorApp.Services
                     throw new EntityAlreadyExistsException("Prompt", $"Prompt with name {promptCreateDTO.PromptName} already exists");
                 }
 
-                //dto -> entity
                 var prompt = mapper.Map<Prompt>(promptCreateDTO);
-
 
                 await unitOfWork.PromptRepository.AddAsync(prompt);
 
-                await unitOfWork.SaveAsync(); //commit
+                await unitOfWork.SaveAsync();
 
-                //entity->dto
                 var dto = mapper.Map<PromptReadOnlyDTO>(prompt);
                 logger.LogInformation("Prompt with ID {id} created successfully", dto.Id);
                 return dto;
@@ -180,39 +147,26 @@ namespace CoordExtractorApp.Services
             }
         }
 
-
-        /// <summary>
-        /// Updates an existing Prompt.
-        /// </summary>
-        /// <param name="id">The prompt ID.</param>
-        /// <param name="promptUpdateDTO">The updated prompt data.</param>
-        /// <returns>True if the update was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
-        /// <exception cref="EntityAlreadyExistsException">Thrown if the new name conflicts with another prompt.</exception>
         public async Task<bool> UpdatePromptAsync(int id, PromptUpdateDTO promptUpdateDTO)
         {
             try
             {
                 var prompt = await unitOfWork.PromptRepository.GetAsync(id);
-                //αν δεν υπάρχει
                 if (prompt == null)
                 {
                     throw new EntityNotFoundException("Prompt", $"Prompt with id: {id} not found");
                 }
                 if (!string.IsNullOrEmpty(promptUpdateDTO.PromptName) && promptUpdateDTO.PromptName != prompt.PromptName)
                 {
-                    //promptName unique. και ελεγχος αν υπάρχει ήδη
                     var existingPrompt = await unitOfWork.PromptRepository.GetPromptByPromptNameAsync(promptUpdateDTO.PromptName!);
 
-                if (existingPrompt != null && existingPrompt.Id != id)
+                    if (existingPrompt != null && existingPrompt.Id != id)
                     {
                         throw new EntityAlreadyExistsException("Prompt", $"Prompt with name {promptUpdateDTO.PromptName} already exists.");
                     }
-                    //update PromptName
                     prompt.PromptName = promptUpdateDTO.PromptName;
-                   
                 }
-                //update PromptText
+                
                 if (promptUpdateDTO.PromptText != null)
                     prompt.PromptText = promptUpdateDTO.PromptText;
 
@@ -220,7 +174,6 @@ namespace CoordExtractorApp.Services
 
                 logger.LogInformation("Prompt with {id} updated successfully", id);
                 return true;
-
             }
             catch (EntityNotFoundException ex)
             {
@@ -232,17 +185,8 @@ namespace CoordExtractorApp.Services
                 logger.LogError("Error updating prompt with id {id}. {Message}", id, ex.Message);
                 throw;
             }
-
-
-
         }
 
-        /// <summary>
-        /// Soft deletes a Prompt and cascades deletion to associated conversion jobs.
-        /// </summary>
-        /// <param name="id">The prompt ID.</param>
-        /// <returns>True if deletion was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the prompt is not found.</exception>
         public async Task<bool> DeletePromptAsync(int id)
         {
             try
@@ -253,14 +197,13 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("Prompt", $"Prompt with id {id} not found");
                 }
 
-                //αν υπάρχουν conversion jobs συνδεδεμένα -> warning για cascade soft delete
                 var jobs = await unitOfWork.ConversionJobRepository.GetJobsByPromptIdAsync(id);
 
-                if (jobs.Count>0)
+                if (jobs.Count > 0)
                 {
                     logger.LogWarning("Prompt with {id} and {PromptText} has {JobCount} jobs assigned. Cascading soft delete", id, prompt.PromptText, jobs.Count);
                 }
-                //iteration στα jobs
+                
                 foreach (var job in jobs)
                 {
                     await unitOfWork.ConversionJobRepository.DeleteAsync(job.Id);
@@ -272,7 +215,6 @@ namespace CoordExtractorApp.Services
                 logger.LogInformation("Prompt with {id} deleted successfully. Deleted {jobCount} jobs", id, jobs.Count);
 
                 return true;
-
             }
             catch (EntityNotFoundException ex)
             {
@@ -281,5 +223,4 @@ namespace CoordExtractorApp.Services
             }
         }
     }
-
-    }
+}

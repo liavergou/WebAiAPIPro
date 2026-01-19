@@ -1,46 +1,44 @@
-﻿using AutoMapper;
-﻿using CoordExtractorApp.Core.Filters;
-﻿using CoordExtractorApp.Data;
-﻿using CoordExtractorApp.DTO;
+using AutoMapper;
+using CoordExtractorApp.Core.Filters;
+using CoordExtractorApp.Data;
+using CoordExtractorApp.DTO;
 using CoordExtractorApp.DTO.Keycloak;
 using CoordExtractorApp.Exceptions;
 using CoordExtractorApp.Models;
-﻿using CoordExtractorApp.Repositories;
+using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.Keycloak;
 using Serilog;
-﻿using System.Linq.Expressions;
-﻿using System.Security.Claims;
+using System.Linq.Expressions;
+using System.Security.Claims;
 using KeycloakException = CoordExtractorApp.Exceptions.keycloak.KeycloakException;
 
 namespace CoordExtractorApp.Services
-﻿{
-﻿    public class UserService : IUserService
-﻿    {
-﻿        private readonly IUnitOfWork unitOfWork;
-﻿        private readonly IMapper mapper;
-﻿        private readonly IKeycloakAdminService keycloakAdminService;
+{
+    /// <summary>
+    /// Service implementation for managing users.
+    /// User management operations are performed via Keycloak Admin API and mirrored to the local database.
+    /// </summary>
+    public class UserService : IUserService
+    {
+        private readonly IUnitOfWork unitOfWork;
+        private readonly IMapper mapper;
+        private readonly IKeycloakAdminService keycloakAdminService;
         private readonly ILogger<UserService> logger =
             new LoggerFactory().AddSerilog().CreateLogger<UserService>();
 
         public UserService(IUnitOfWork unitOfWork, IMapper mapper, IKeycloakAdminService keycloakAdminService)
-﻿        {
-﻿            this.unitOfWork = unitOfWork;
-﻿            this.mapper = mapper;
-﻿            this.keycloakAdminService = keycloakAdminService;
-﻿        }
+        {
+            this.unitOfWork = unitOfWork;
+            this.mapper = mapper;
+            this.keycloakAdminService = keycloakAdminService;
+        }
 
-        /// <summary>
-        /// Retrieves a user by their unique identifier from the local database.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <returns>A DTO containing user details.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
         public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
-﻿        {
-﻿            User? user = null;
-﻿            try
-﻿            {
-﻿                user = await unitOfWork.UserRepository.GetAsync(id);
+        {
+            User? user = null;
+            try
+            {
+                user = await unitOfWork.UserRepository.GetAsync(id);
                 if (user == null)
                 {
                     throw new EntityNotFoundException("User", $"User with id: {id} not found");
@@ -49,42 +47,33 @@ namespace CoordExtractorApp.Services
                 logger.LogInformation("User found with: {id}", id);
                 return dto;
 
-            }catch (EntityNotFoundException ex)
-﻿            {
-﻿                logger.LogError("Error retrieving user by ID: {Id}. {Message}", id, ex.Message);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error retrieving user by ID: {Id}. {Message}", id, ex.Message);
                 throw;
-﻿            }
-﻿        }
+            }
+        }
 
-        /// <summary>
-        /// Retrieves a user by their username.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <returns>A DTO containing user details.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>﻿
         public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
-﻿        {
-﻿            try
-﻿            {
-﻿                User? user = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
-﻿                if (user == null)
-﻿                {
-﻿                    throw new EntityNotFoundException("User", "User with username: " + " not found");
-﻿                }
-﻿                logger.LogInformation("User found: {Username}", username);
-﻿                return mapper.Map<UserReadOnlyDTO>(user);
-﻿            }
-﻿            catch (EntityNotFoundException ex)
-﻿            {
-﻿                logger.LogError("Error retrieving user by username: {Username}. {Message}", username, ex.Message);
-﻿                throw;
-﻿            }
-﻿        }
+        {
+            try
+            {
+                User? user = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", "User with username: " + " not found");
+                }
+                logger.LogInformation("User found: {Username}", username);
+                return mapper.Map<UserReadOnlyDTO>(user);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error retrieving user by username: {Username}. {Message}", username, ex.Message);
+                throw;
+            }
+        }
 
-        /// <summary>
-        /// Retrieves all users from the system.
-        /// </summary>
-        /// <returns>A list of all users ordered by username.</returns>
         public async Task<List<UserReadOnlyDTO>> GetAllUsersAsync()
         {
             var users = await unitOfWork.UserRepository.GetAllAsync();
@@ -95,209 +84,163 @@ namespace CoordExtractorApp.Services
             return dto;
         }
 
-        /// <summary>
-        /// Retrieves a paginated and filtered list of users.
-        /// </summary>
-        /// <param name="pageNumber">The page number.</param>
-        /// <param name="pageSize">The page size.</param>
-        /// <param name="userFiltersDTO">Filters for username and role.</param>
-        /// <returns>A paginated result containing users.</returns>
-        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize, 
+        public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
              UserFiltersDTO userFiltersDTO)
-﻿        {
-﻿            List<Expression<Func<User, bool>>> predicates = [];
-﻿            if (!string.IsNullOrEmpty(userFiltersDTO.Username))
-﻿            {
-﻿                predicates.Add(u => u.Username == userFiltersDTO.Username);
-﻿            }
+        {
+            List<Expression<Func<User, bool>>> predicates = [];
+            if (!string.IsNullOrEmpty(userFiltersDTO.Username))
+            {
+                predicates.Add(u => u.Username == userFiltersDTO.Username);
+            }
 
             if (!string.IsNullOrEmpty(userFiltersDTO.Role))
             {
                 predicates.Add(u => u.Role == userFiltersDTO.Role);
             }
 
-
             var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, predicates);
-﻿            var dtoResult = new PaginatedResult<UserReadOnlyDTO>()
-﻿            {
-﻿                Data = mapper.Map<List<UserReadOnlyDTO>>(result.Data),
-﻿                TotalRecords = result.TotalRecords,
-﻿                PageNumber = result.PageNumber,
-﻿                PageSize = result.PageSize
-﻿            };
-﻿            logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
-﻿            return dtoResult;
-﻿        }
+            var dtoResult = new PaginatedResult<UserReadOnlyDTO>()
+            {
+                Data = mapper.Map<List<UserReadOnlyDTO>>(result.Data),
+                TotalRecords = result.TotalRecords,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize
+            };
+            logger.LogInformation("Retrieved {Count} users", dtoResult.Data.Count);
+            return dtoResult;
+        }
 
-        /// <summary>
-        /// Updates an existing user's details and role in both Keycloak and the local database.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <param name="userUpdateDto">The updated user data.</param>
-        /// <returns>True if the update was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>﻿
         public async Task<bool> UpdateUserAsync(int id, UserUpdateDTO userUpdateDto)
-﻿        {
-﻿            try
-﻿            {
-﻿                var user = await unitOfWork.UserRepository.GetAsync(id);
-﻿                if (user == null)
-﻿                {
-﻿                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
-﻿                }
-﻿
-﻿                await keycloakAdminService.UpdateUserDetailsAsync(user.KeycloakId, userUpdateDto);
-﻿
-﻿                if (!string.IsNullOrEmpty(userUpdateDto.Role))
-﻿                {
-﻿                    await keycloakAdminService.UpdateUserRoleAsync(user.KeycloakId, userUpdateDto.Role);
-﻿                }
+        {
+            try
+            {
+                var user = await unitOfWork.UserRepository.GetAsync(id);
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
+                }
 
-                //ελεγχος αλλαγής ρόλου και καθάρισμα πρόσβασης projectsusers
+                await keycloakAdminService.UpdateUserDetailsAsync(user.KeycloakId, userUpdateDto);
+
+                if (!string.IsNullOrEmpty(userUpdateDto.Role))
+                {
+                    await keycloakAdminService.UpdateUserRoleAsync(user.KeycloakId, userUpdateDto.Role);
+                }
+
                 if(!string.IsNullOrEmpty(userUpdateDto.Role) && user.Role!=userUpdateDto.Role) 
                 {
                     logger.LogInformation("Role changed for User with id: {Id}. Clear project assignments", id);
                     await unitOfWork.UserRepository.SetProjectsForUserAsync(id, new List<int>());
                 }
             
-﻿                user.Email = userUpdateDto.Email ?? user.Email;
-﻿                user.Firstname = userUpdateDto.Firstname ?? user.Firstname;
-﻿                user.Lastname = userUpdateDto.Lastname ?? user.Lastname;
-﻿                user.Role = userUpdateDto.Role ?? user.Role;
-﻿
-﻿                await unitOfWork.SaveAsync();
-﻿                logger.LogInformation("User {Id} updated successfully.", id);
-﻿                return true;
-﻿            }
-﻿            catch (EntityNotFoundException ex)
-﻿            {
-﻿                logger.LogError("Error updating user {Id}. {Message}", id, ex.Message);
-﻿                throw;
-﻿            }
-﻿        }
+                user.Email = userUpdateDto.Email ?? user.Email;
+                user.Firstname = userUpdateDto.Firstname ?? user.Firstname;
+                user.Lastname = userUpdateDto.Lastname ?? user.Lastname;
+                user.Role = userUpdateDto.Role ?? user.Role;
 
-        /// <summary>
-        /// Deletes a user from Keycloak and the local database.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
-        /// <returns>True if deletion was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the user is not found.</exception>
-        /// <exception cref="DeletionForbiddenException">Thrown if the user has associated conversion jobs.</exception>
+                await unitOfWork.SaveAsync();
+                logger.LogInformation("User {Id} updated successfully.", id);
+                return true;
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error updating user {Id}. {Message}", id, ex.Message);
+                throw;
+            }
+        }
+
         public async Task<bool> DeleteUserAsync(int id)
-﻿        {
-﻿            try
-﻿            {
-﻿                var user = await unitOfWork.UserRepository.GetAsync(id);
-﻿                if (user == null)
-﻿                {
-﻿                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
-﻿                }
+        {
+            try
+            {
+                var user = await unitOfWork.UserRepository.GetAsync(id);
+                if (user == null)
+                {
+                    throw new EntityNotFoundException("User", $"User with id: {id} not found");
+                }
 
-                //ελεγχος για ύπαρξη related conversionJobs﻿. 403 forbidden
                 var jobs = await unitOfWork.ConversionJobRepository.GetJobsByUserIdAsync(user.Id);
                 if (jobs.Count > 0)
                 {
                     throw new DeletionForbiddenException("User", $"User with id: {id} cannot be deleted. Connected with {jobs.Count} conversion jobs");
-
                 }
                 
-
-                //καλώ Admin service για διαγραφή. Ελεγχος αν διαφράφηκε στο keycloak
                 bool keycloakDeleteSuccess = await keycloakAdminService.DeleteUserAsync(user.KeycloakId);
-﻿
-﻿                if (!keycloakDeleteSuccess)
-﻿                {
-﻿                    logger.LogError("Failed to delete user {KeycloakId} from Keycloak. Aborting local delete.", user.KeycloakId);
-﻿                    return false;
-﻿                }
-﻿
-﻿                await unitOfWork.UserRepository.DeleteAsync(id);
-﻿                await unitOfWork.SaveAsync();
-﻿                
-﻿                logger.LogInformation("User with local id {id} and Keycloak Id {keycloakId} deleted successfully.", id, user.KeycloakId);
-﻿                return true;
-﻿            }
-﻿            catch (EntityNotFoundException ex)
-﻿            {
-﻿                logger.LogError("Error deleting user {id}. {Message}", id, ex.Message);
-﻿                throw;
-﻿            }catch (DeletionForbiddenException ex)
+
+                if (!keycloakDeleteSuccess)
+                {
+                    logger.LogError("Failed to delete user {KeycloakId} from Keycloak. Aborting local delete.", user.KeycloakId);
+                    return false;
+                }
+
+                await unitOfWork.UserRepository.DeleteAsync(id);
+                await unitOfWork.SaveAsync();
+                
+                logger.LogInformation("User with local id {id} and Keycloak Id {keycloakId} deleted successfully.", id, user.KeycloakId);
+                return true;
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError("Error deleting user {id}. {Message}", id, ex.Message);
+                throw;
+            }
+            catch (DeletionForbiddenException ex)
             {
                 logger.LogError("Error in deleting user {id}. {Message}", id, ex.Message);
                 throw;
             }
+        }
 
-﻿        }
-
-        /// <summary>
-        /// Constructs the application user model by combining identifying information from the authenticated user's Keycloak claims (personal details) with role and ID information from the local database.
-        /// </summary>
-        /// <param name="user">The claims principal of the authenticated user.</param>
-        /// <returns>The application user model containing merged data.</returns>
-        /// <exception cref="EntityNotAuthorizedException">Thrown if authentication fails or user is not found.</exception>
-
-        //μικτό profile για Base controller
         public async Task<ApplicationUser> GetUserInfoAsync(ClaimsPrincipal user)
-﻿        {
-﻿            if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
-﻿            {
-﻿                logger.LogError("User is not authenticated or identity is missing.");
-﻿                throw new EntityNotAuthorizedException("User", "User is not authenticated");
-﻿            }
-﻿
-﻿            var keycloakId = user.FindFirst("sub")?.Value;
-﻿            if (string.IsNullOrEmpty(keycloakId))
-﻿            {
-﻿                logger.LogError("KeycloakId not found in claims");
-﻿                throw new EntityNotAuthorizedException("User", "Missing identifier key");
-﻿            }
-﻿
-﻿            var userFromDb = await unitOfWork.UserRepository.GetUserByKeycloakIdAsync(keycloakId);
-﻿            if (userFromDb == null)
-﻿            {
-﻿                logger.LogError("User with KeycloakId {KeycloakId} not found in local database.", keycloakId);
-﻿                throw new EntityNotAuthorizedException("User", "User is not provisioned in the local system.");
-﻿            }
-﻿
-﻿            var applicationUser = new ApplicationUser
-﻿            {
-﻿                Id = userFromDb.Id,
-﻿                KeycloakId = keycloakId,
-﻿                Username = user.FindFirst("preferred_username")?.Value,
-﻿                Email = user.FindFirst("email")?.Value,
-﻿                Lastname = user.FindFirst("family_name")?.Value,
-﻿                Firstname = user.FindFirst("given_name")?.Value,
-﻿                Role = userFromDb.Role
-﻿            };
-﻿            
-﻿            return applicationUser;
-﻿        }
-        /// <summary>
-        /// Creates a new user in Keycloak, assigns a role, and save to the local database.
-        /// </summary>
-        /// <param name="userCreateDTO">The new user data.</param>
-        /// <returns>A read-only DTO of the created user.</returns>
-        /// <exception cref="InvalidArgumentException">Thrown if username or role is missing.</exception>
-        /// <exception cref="EntityAlreadyExistsException">Thrown if the username already exists.</exception>
-        /// <exception cref="KeycloakException">Thrown if Keycloak operations fail.</exception>
+        {
+            if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                logger.LogError("User is not authenticated or identity is missing.");
+                throw new EntityNotAuthorizedException("User", "User is not authenticated");
+            }
+
+            var keycloakId = user.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(keycloakId))
+            {
+                logger.LogError("KeycloakId not found in claims");
+                throw new EntityNotAuthorizedException("User", "Missing identifier key");
+            }
+
+            var userFromDb = await unitOfWork.UserRepository.GetUserByKeycloakIdAsync(keycloakId);
+            if (userFromDb == null)
+            {
+                logger.LogError("User with KeycloakId {KeycloakId} not found in local database.", keycloakId);
+                throw new EntityNotAuthorizedException("User", "User is not provisioned in the local system.");
+            }
+
+            var applicationUser = new ApplicationUser
+            {
+                Id = userFromDb.Id,
+                KeycloakId = keycloakId,
+                Username = user.FindFirst("preferred_username")?.Value,
+                Email = user.FindFirst("email")?.Value,
+                Lastname = user.FindFirst("family_name")?.Value,
+                Firstname = user.FindFirst("given_name")?.Value,
+                Role = userFromDb.Role
+            };
+            
+            return applicationUser;
+        }
+
         public async Task<UserReadOnlyDTO> CreateUserWithKeycloakAsync(UserCreateDTO userCreateDTO)
         {
             try
             {
-                //έλεγχος αν το username είναι κενό
                 if (string.IsNullOrEmpty(userCreateDTO.Username)){
                     throw new InvalidArgumentException("Username", "Username is required");
                 }
                 
                 User? existingUser = await unitOfWork.UserRepository.GetUserByUsernameAsync(userCreateDTO.Username);
-                //έλεγχος αν το username υπάρχει ήδη στη βάση
                 if (existingUser != null)
                 {
                     throw new EntityAlreadyExistsException("User", $"User with username '{existingUser.Username}' already exists.");
-
                 }
 
-                //αν δεν υπάρχει στη βάση τότε create user στο keycloak
                 var keycloakUserDTO = new KeycloakUserDTO
                 {
                     Username = userCreateDTO.Username,
@@ -319,23 +262,19 @@ namespace CoordExtractorApp.Services
                     throw new KeycloakException("Keycloak_error","Failed to create user in Keycloak");
                 }
 
-                //έλεγχος του role
                 if (string.IsNullOrEmpty(userCreateDTO.Role))
                 {
                     throw new InvalidArgumentException("Role", "Role is required.");
                 }
 
-                //assign role στον user του keycloak
                 bool roleAssigned = await keycloakAdminService.AssignUserRoleToUserAsync(keycloakId, userCreateDTO.Role);
                 if (!roleAssigned)
                 {
-                    //αν αποτυχει τοτε πρέπει να διαγραφεί ο user απο το Keycloak
                     await keycloakAdminService.DeleteUserAsync(keycloakId);
                     logger.LogError("Failed to assign role to user {Username} in keycloak. User deleted from keycloak", userCreateDTO.Username);
                     throw new KeycloakException("Keycloak_error", "Failed to assign role to user in keycloak");
                 }
 
-                //αν όλα οκ save τον user στο db
                 var dbSaveUser = mapper.Map<User>(userCreateDTO);
                 dbSaveUser.KeycloakId = keycloakId;
 
@@ -347,7 +286,8 @@ namespace CoordExtractorApp.Services
 
                 return dto;
 
-            }catch (EntityAlreadyExistsException ex)
+            }
+            catch (EntityAlreadyExistsException ex)
             {
                 logger.LogError("Failed to create user: {Message}", ex.Message);
                 throw;
@@ -357,11 +297,6 @@ namespace CoordExtractorApp.Services
                 logger.LogError("Keycloak service failed:{Message}", ex.Message);
                 throw;
             } 
-
         }
-
-        
     }
-﻿}
-﻿
-﻿
+}

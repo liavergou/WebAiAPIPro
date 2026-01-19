@@ -21,7 +21,7 @@ namespace CoordExtractorApp.Repositories
 
         public async Task<bool> SaveAsync()
         {
-            return await context.SaveChangesAsync() > 0; //κανει commit ή αυτόματο rollback σε exception
+            return await context.SaveChangesAsync() > 0;
         }
     }
 }

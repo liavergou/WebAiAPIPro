@@ -9,13 +9,12 @@ namespace CoordExtractorApp.Repositories
 
 
     {
-        //constructor
         public ProjectRepository(TopoDbContext context) : base(context) { }
 
         public async Task<Project?> GetProjectByProjectNameAsync(string projectName)
         {
             var project = await context.Projects
-                .IgnoreQueryFilters() ////https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10 disabling filters Για check existing στο create update
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(p => p.ProjectName == projectName);
             if (project == null) return null;
 

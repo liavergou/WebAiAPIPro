@@ -22,7 +22,7 @@ namespace CoordExtractorApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //για το keyvault του azure (μονο dev)
+            //azure keyvault
             if (builder.Environment.IsDevelopment())
             {
                 var keyVaultUri = builder.Configuration["KeyVaultUri"];
@@ -34,22 +34,22 @@ namespace CoordExtractorApp
                 }
             }
 
-            //generativeAI (gemini key)
+            //generativeAI (api key)
             var geminiApiKey = builder.Configuration["Gemini:Credentials:ApiKey"];
 
-            // **CONNECTION STRING**
+            //Connection string
             var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            // **SERVICES ΣΤΟ DI CONTAINER**
+            //SERVICES - DI CONTAINER
         
-            //POSTGIS
+            //PostGIS
             builder.Services.AddDbContext<CoordExtractorApp.Data.TopoDbContext>(options =>
             options.UseNpgsql(connString, o => o.UseNetTopologySuite()));
                         
-            //Repositories & Unit of Work (μέσω της Extension Method)
+            //Repositories & Unit of Work
             builder.Services.AddRepositories();
 
-            // Services (για το dependency injection)
+            // Services
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPromptService, PromptService>();
@@ -67,58 +67,34 @@ namespace CoordExtractorApp
             builder.Host.UseSerilog((ctx, lc) =>
                 lc.ReadFrom.Configuration(ctx.Configuration));
 
-            //**AUTHENTICATION ME KEYCLOAK**
-            builder.Services.AddKeycloakAuthentication(builder.Configuration); //προστεθηκε η AuthenticationDIExtensions για να απλοποιηθεί στο program 
-           
-            //**CORS**
-            //builder.Services.AddCors(options =>
-            //{
-            //    options.AddPolicy("ReactClient",
-            //        b => b.WithOrigins(
-            //            "http://localhost:5173",
-            //            "http://localhost:5174",
-            //            "http://localhost:5175",
-            //            "http://localhost:5176"
-            //            )
-            //            .AllowAnyMethod()
-            //            .AllowAnyHeader()
-            //    );
-            //});
-            //Μονο για Testing!!!
-            //builder.Services.AddCors(options =>
-            //{
-            //    options.AddPolicy("LocalClient",
-            //        b => b.WithOrigins("https://localhost:5001")
-            //            .AllowAnyMethod()
-            //            .AllowAnyHeader()
-            //    );
-            //});
+            //Authentication-Keycloak
+            builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
-            // CORS Policy για Development - Επιτρέπει όλους (ΠΡΟΣΟΧΗ: Μόνο για testing!)
+
+            // CORS Policy WARNING: only for development and test mode-Replace if needed for production mode to specific client origins
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
-                    b => b.AllowAnyOrigin()   // Επιτρέπει ΟΛΟΥΣ (security risk σε production!)
-                          .AllowAnyMethod()   // GET, POST, PUT, DELETE κλπ
-                          .AllowAnyHeader()   // Όλα τα HTTP headers
+                    b => b.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
                 );
             });
 
-            //μετατροπή των dto σε json πριν σταλουν στον client
+            //dto convert to json
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
             {
-                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Include; //αν ενα πεδιο στο DTO είναι κενό να το βάλει
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize; //για να αντιμετωπίσει το προβλημα του circular
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Include;
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize;
                 options.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
            
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "CoordExtractor App", Version = "v1" });
-                // options.SupportNonNullableReferenceTypes(); // default true > .NET 6
                 options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
                     new OpenApiSecurityScheme
                     {
@@ -133,12 +109,13 @@ namespace CoordExtractorApp
             });
 
  
-            //δήλωση HttpClient (keycloak Και geoserver)
+            //HttpClient (keycloak &  geoserver)
             builder.Services.AddHttpClient("KeycloakAdminClient");
             builder.Services.AddHttpClient("GeoserverClient");
             
 
-            //--------------------------------------------------------------
+
+
             var app = builder.Build();
       
             // Configure the HTTP request pipeline.
@@ -149,7 +126,7 @@ namespace CoordExtractorApp
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoordExtractor App v1"));
             }
-            //προσοχή στο ordering
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();
@@ -160,7 +137,6 @@ namespace CoordExtractorApp
             app.UseCors("AllowAll");
 
             // Serve static images in Development mode (in Production, IIS virtual directory handles this)
-            // https://stackoverflow.com/questions/73547048/static-files-or-images-png-doesnt-load-using-c-sharp-net-6-with-react-js
             if (app.Environment.IsDevelopment())
             {
                 app.UseStaticFiles(new StaticFileOptions
@@ -175,7 +151,7 @@ namespace CoordExtractorApp
 
             app.UseAuthorization();
 
-            app.UseMiddleware<ErrorHandlerMiddleware>(); //οπως στο schoolApp αλλά χωρίς το registration error handler
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             app.MapControllers();
 

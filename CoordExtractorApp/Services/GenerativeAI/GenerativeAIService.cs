@@ -1,47 +1,35 @@
-﻿using CoordExtractorApp.DTO.GenerativeAI;
+using CoordExtractorApp.DTO.GenerativeAI;
 using GenerativeAI;
 using GenerativeAI.Types;
 
 namespace CoordExtractorApp.Services.GenerativeAI
 {
+    /// <summary>
+    /// Service implementation for extracting WKT geometry from images using a third-party .NET SDK (Google GenerativeAI) based on Google Gemini REST APIs.
+    /// </summary>
     public class GenerativeAIService(IConfiguration configuration, ILogger<GenerativeAIService> logger) : IGenerativeAIService
     {
 
         private readonly IConfiguration configuration = configuration;
         private readonly ILogger <GenerativeAIService> logger = logger;
 
-        /// <summary>
-        /// Sends an image and a text prompt to the Gemini Generative AI API to extract geometry in WKT format.
-        /// </summary>
-        /// <param name="imageBytes">The image file data as a byte array.</param>
-        /// <param name="mimeType">The MIME type of the image (e.g. "image/png").</param>
-        /// <param name="promptText">The text prompt instructing the AI on what to extract.</param>
-        /// <returns>A string containing the extracted geometry in Well-Known Text format.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if API keys or models are missing, or if the API response is invalid.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if the prompt text is null or empty.</exception>
+        
         public async Task<string> GetWktFromImageAsync(byte[] imageBytes, string mimeType, string promptText)
         {
-            
-
             try
             {
-                
-                var apiKey = configuration["Gemini:Credentials:ApiKey"]; //έλεγχος ύπαρξης apiKey από settings
+                var apiKey = configuration["Gemini:Credentials:ApiKey"];
                 if (string.IsNullOrEmpty(apiKey))
                 {
                     throw new InvalidOperationException("Gemini Api Key is not configured in appsettings");
                 }
 
-
-                //έλεγχος ύπαρξης model
-                var modelName = configuration["Gemini:Model"]; //απο settings
+                var modelName = configuration["Gemini:Model"];
                 if (string.IsNullOrEmpty(modelName))
                 {
                     throw new InvalidOperationException("Gemini Model is not configured in appsettings");
                 }
-
-
-                //ελεγχος αν υπάρχει το πρόθεμα models/ που πρέπει να υπάρχει για το gemini api
+                
                 if (!modelName.StartsWith("models/"))
                 {
                     modelName = $"models/{modelName}";
@@ -49,35 +37,21 @@ namespace CoordExtractorApp.Services.GenerativeAI
 
                 if (string.IsNullOrEmpty(promptText))
                 {
-
                     throw new ArgumentNullException(nameof(promptText), "Prompt text cannot be null or empty");
-
                 }
 
 
                 logger.LogInformation("Calling Gemini API with model: {Model}", modelName);
 
-                //δημιουργία Instance για το GenerativeAi
+                
                 var googleAI = new GoogleAi(apiKey);
 
-            //https://gunpal5.github.io/generative-ai/html/aafe0c76-3855-8b3c-d0ed-76af0fe53276.htm
-            //https://github.com/gunpal5/Google_GenerativeAI?tab=readme-ov-file#1-using-google-ai
-                // Δημιουργία του GenerativeModel με το καθορισμένο μοντέλο. Δινω μονο την πρώτη παράμετρο. (να χρησιμοποιήσω το systemInstruction?)
                 var model = googleAI.CreateGenerativeModel(modelName);
-
-
-
-
-            //***** PROMPT TEXT KAI EIKONA GIA TO REQUEST. ΔΗΜΙΟΥΡΓΙΑ ΤΩΝ PARTS
-            //https://gunpal5.github.io/generative-ai/html/c26d5035-f439-24ad-0804-09da2c89e445.htm
-            //https://gunpal5.github.io/generative-ai/html/d31a5a25-a65b-d8ae-dee8-bc6e3bd84400.htm
 
                 var textPart = new Part { Text = promptText };
 
-
                 var imagePart = new Part                
                 {
-                    //https://gunpal5.github.io/generative-ai/html/f2f8b5d4-408b-4854-57a4-afd3506944be.htm
                     InlineData = new Blob
                     {
                         MimeType = mimeType,
@@ -105,7 +79,7 @@ namespace CoordExtractorApp.Services.GenerativeAI
                     throw new InvalidOperationException("Gemini response did not contain a WKT polygon");
                 }
 
-                return result.WktPolygon; //αν ολα οκ επιστροφή WktPolygon
+                return result.WktPolygon;
 
             } catch (Exception ex) {
                 logger.LogError(ex, "An error occured during Gemini API Call");

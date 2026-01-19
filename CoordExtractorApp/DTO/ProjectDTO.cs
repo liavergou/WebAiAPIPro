@@ -3,8 +3,6 @@
     /// <summary>
     /// Data Transfer Object representing a project, including a count of its conversion jobs.
     /// </summary>
-    
-    //περιλαμβάνει το count των jobs
     public class ProjectDTO
     {
         /// <summary>

@@ -14,7 +14,7 @@ namespace CoordExtractorApp.Repositories
         public async Task<User?> GetUserByKeycloakIdAsync(string keycloakId)
         {
             var user = await context.Users
-                 .FirstOrDefaultAsync(u => u.KeycloakId == keycloakId); //προσοχή το KeycloakId ερχεται ως string απο το json
+                 .FirstOrDefaultAsync(u => u.KeycloakId == keycloakId);
 
             if (user == null) return null;
             return user;
@@ -28,50 +28,48 @@ namespace CoordExtractorApp.Repositories
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
             return await context.Users
-                .IgnoreQueryFilters() ////https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10 disabling filters Για check existing στο create update
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,
             List<Expression<Func<User, bool>>> predicates)
         {
-            IQueryable<User> query = context.Users; // δεν εκτελείται
+            IQueryable<User> query = context.Users;
 
             if (predicates != null && predicates.Count > 0)
             {
                 foreach (var predicate in predicates)
                 {
-                    query = query.Where(predicate); // εκτελείται, υπονοείται το AND
+                    query = query.Where(predicate);
                 }
             }
 
-            int totalRecords = await query.CountAsync(); // εκτελείται
+            int totalRecords = await query.CountAsync();
 
             int skip = (pageNumber - 1) * pageSize;
 
             var data = await query
-                .OrderBy(u => u.Username) // πάντα να υπάρχει ένα OrderBy πριν το Skip
+                .OrderBy(u => u.Username)
                 .Skip(skip)
                 .Take(pageSize)
-                .ToListAsync(); // εκτελείται
+                .ToListAsync();
 
             return new PaginatedResult<User>(data, totalRecords, pageNumber, pageSize);
         }
 
-        //για να παρω τη λθστα με τα user-projects
         public async Task<List<int>> GetProjectIdsForUserAsync(int id)
         {
             return await context.Users
-                .Where(u => u.Id == id) //για τον user με αυτο το id
-                .SelectMany(u => u.Projects.Select(p => p.Id)) //παιρνω τα projects απο το navigation property
+                .Where(u => u.Id == id)
+                .SelectMany(u => u.Projects.Select(p => p.Id))
                 .ToListAsync();
         }
 
-        //για την ενημέρωση του user-projects
         public async Task SetProjectsForUserAsync(int id, List<int> projectIds)
         {
             var user = await context.Users
-                .Include(u => u.Projects) //ο user με τα curent projects του
+                .Include(u => u.Projects)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -80,17 +78,15 @@ namespace CoordExtractorApp.Repositories
             }
 
             var projects = await context.Projects
-                .Where(p => projectIds.Contains(p.Id)) //παιρνω όλα τα projects για τη λιστα των project ids απο front
+                .Where(p => projectIds.Contains(p.Id))
                 .ToListAsync();
 
-            user.Projects.Clear(); //!!delete τις παλιες σχέσεις
+            user.Projects.Clear();
 
-
-            foreach (var project in projects) //add τις νέες σχέσεις user-project
+            foreach (var project in projects)
             {
                 user.Projects.Add(project);
             }
-
         }
     }
 }

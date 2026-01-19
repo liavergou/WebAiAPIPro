@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CoordExtractorApp.Core.Filters;
 using CoordExtractorApp.Data;
 using CoordExtractorApp.DTO;
@@ -12,6 +12,9 @@ using System.Linq.Expressions;
 
 namespace CoordExtractorApp.Services
 {
+    /// <summary>
+    /// Service implementation for managing Projects.
+    /// </summary>
     public class ProjectService : IProjectService
     {
         private readonly IUnitOfWork unitOfWork;
@@ -27,12 +30,6 @@ namespace CoordExtractorApp.Services
             this.configuration = configuration;
         }
 
-        /// <summary>
-        /// Retrieves a project by its unique identifier.
-        /// </summary>
-        /// <param name="id">The project ID.</param>
-        /// <returns>A DTO containing project details.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown when the project does not exist.</exception>
         public async Task<ProjectDTO?> GetProjectByIdAsync(int id)
         {
             Project? project = null;
@@ -41,7 +38,6 @@ namespace CoordExtractorApp.Services
                 project = await unitOfWork.ProjectRepository.GetAsync(id);
 
                 if (project == null)
-
                 {
                     throw new EntityNotFoundException("Project", "Project with id: " + id + " not found.");
                 }
@@ -62,23 +58,15 @@ namespace CoordExtractorApp.Services
             {
                 logger.LogError("Error retrieving project with ID: {Id}. {Message}", id, ex.Message);
                 throw;
-
             }
         }
 
-        /// <summary>
-        /// Retrieves a project by its name.
-        /// </summary>
-        /// <param name="projectName">The name of the project.</param>
-        /// <returns>A read-only DTO of the project.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown when the project does not exist.</exception>
         public async Task<ProjectReadOnlyDTO?> GetProjectByProjectNameAsync(string projectName)
         {
             try
             {
                 Project? project = await unitOfWork.ProjectRepository.GetProjectByProjectNameAsync(projectName);
                 if (project == null)
-
                 {
                     throw new EntityNotFoundException("Project", "Project with projectName: " + projectName + " not found.");
                 }
@@ -92,14 +80,9 @@ namespace CoordExtractorApp.Services
             {
                 logger.LogError("Error retrieving project by ProjectName: {ProjectName}. {Message}", projectName, ex.Message);
                 throw;
-
             }
         }
 
-        /// <summary>
-        /// Retrieves all projects from the database.
-        /// </summary>
-        /// <returns>A list of all projects ordered by name.</returns>
         public async Task<List<ProjectReadOnlyDTO>> GetAllProjectsAsync()
         {
             var projects = await unitOfWork.ProjectRepository.GetAllAsync();
@@ -108,16 +91,8 @@ namespace CoordExtractorApp.Services
                 .ToList();
             logger.LogInformation("Retrieved all projects. Count:{Count}", dto.Count);
             return dto;
-
         }
 
-        /// <summary>
-        /// Retrieves a paginated and filtered list of projects.
-        /// </summary>
-        /// <param name="pageNumber">The page number.</param>
-        /// <param name="pageSize">The number of items per page.</param>
-        /// <param name="projectFilterDTO">Filter criteria (e.g., project name).</param>
-        /// <returns>A paginated result containing the projects.</returns>
         public async Task<PaginatedResult<ProjectDTO>> GetPaginatedProjectsAsync(int pageNumber, int pageSize, ProjectFilterDTO projectFilterDTO)
         {
             try
@@ -157,12 +132,6 @@ namespace CoordExtractorApp.Services
             }
         }
 
-        /// <summary>
-        /// Creates a new project in the database.
-        /// </summary>
-        /// <param name="projectCreateDTO">Data for the new project.</param>
-        /// <returns>The created project DTO.</returns>
-        /// <exception cref="EntityAlreadyExistsException">Thrown if a project with the same name already exists.</exception>
         public async Task<ProjectDTO> CreateProjectAsync(ProjectCreateDTO projectCreateDTO)
         {
             try
@@ -173,25 +142,19 @@ namespace CoordExtractorApp.Services
                     throw new EntityAlreadyExistsException("Project", $"Project with name {projectCreateDTO.ProjectName} already exists");
                 }
 
-                //dto -> entity
-
                 var project = mapper.Map<Project>(projectCreateDTO);
 
-
                 await unitOfWork.ProjectRepository.AddAsync(project);
+                await unitOfWork.SaveAsync();
 
-                await unitOfWork.SaveAsync(); //commit
-
-                // Δημιουργία φακέλων
                 FileHelper.CreateProjectFolders(project.Id, configuration);
 
-                //entity->dto
                 var dto = new ProjectDTO
                 {
                     Id = project.Id,
                     ProjectName = project.ProjectName,
                     Description = project.Description,
-                    JobsCount = 0 //0 για νεο project
+                    JobsCount = 0
                 };
 
                 logger.LogInformation("Project with ID {id} created successfully", dto.Id);
@@ -202,24 +165,14 @@ namespace CoordExtractorApp.Services
                 logger.LogError("Error creating project.Code {Code}, Message: {Message}", ex.Code, ex.Message);
                 throw;
             }
-
         }
 
 
-        /// <summary>
-        /// Updates an existing project.
-        /// </summary>
-        /// <param name="id">The project ID.</param>
-        /// <param name="projectUpdateDTO">The updated project data.</param>
-        /// <returns>True if the update was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the project is not found.</exception>
-        /// <exception cref="EntityAlreadyExistsException">Thrown if the new name conflicts with another project.</exception>
         public async Task<bool> UpdateProjectAsync(int id, ProjectUpdateDTO projectUpdateDTO)
         {
             try
             {
                 var project = await unitOfWork.ProjectRepository.GetAsync(id);
-                //αν δεν υπάρχει
                 if (project == null)
                 {
                     throw new EntityNotFoundException("Project", $"Project with {id} not found");
@@ -227,7 +180,6 @@ namespace CoordExtractorApp.Services
 
                 if (!string.IsNullOrEmpty(projectUpdateDTO.ProjectName) && projectUpdateDTO.ProjectName != project.ProjectName)
                 {
-                    //projectName unique. και ελεγχος αν υπάρχει ήδη
                     var existingProject = await unitOfWork.ProjectRepository.GetProjectByProjectNameAsync(projectUpdateDTO.ProjectName!);
 
                     if (existingProject != null && existingProject.Id != id)
@@ -237,7 +189,7 @@ namespace CoordExtractorApp.Services
 
                     project.ProjectName = projectUpdateDTO.ProjectName;
                 }
-                //ελεγχος και του description
+
                 if (projectUpdateDTO.Description != null) project.Description = projectUpdateDTO.Description;
 
                 await unitOfWork.SaveAsync();
@@ -256,15 +208,8 @@ namespace CoordExtractorApp.Services
                 logger.LogError("Error updating project with id {id}. {Message}", id, ex.Message);
                 throw;
             }
-
         }
 
-        /// <summary>
-        /// Soft deletes a project and cascades the deletion to its conversion jobs.
-        /// </summary>
-        /// <param name="id">The project ID.</param>
-        /// <returns>True if deletion was successful.</returns>
-        /// <exception cref="EntityNotFoundException">Thrown if the project is not found.</exception>
         public async Task<bool> DeleteProjectAsync(int id)
         {
             try
@@ -275,21 +220,20 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("Project", $"Project with id {id} not found");
                 }
 
-                //αν υπάρχουν conversion jobs συνδεδεμένα -> warning για cascade soft delete
                 var jobs = await unitOfWork.ConversionJobRepository.GetJobsByProjectIdAsync(id);
 
                 if (jobs.Count > 0)
                 {
                     logger.LogWarning("Project with {id} and {ProjectName} has {JobCount} jobs assigned. Cascading soft delete", id, project.ProjectName, jobs.Count);
                 }
-                //iteration στα jobs
+
                 foreach (var job in jobs)
                 {
-                    await unitOfWork.ConversionJobRepository.DeleteAsync(job.Id); //soft delete τα συνδεδεμένα convertion job
+                    await unitOfWork.ConversionJobRepository.DeleteAsync(job.Id);
                 }
-                await unitOfWork.ProjectRepository.DeleteAsync(id); //soft delete το project
+                await unitOfWork.ProjectRepository.DeleteAsync(id);
 
-                await unitOfWork.SaveAsync();//commit
+                await unitOfWork.SaveAsync();
 
                 logger.LogInformation("Project with {id} deleted successfully. Deleted {jobCount} jobs", id, jobs.Count);
 

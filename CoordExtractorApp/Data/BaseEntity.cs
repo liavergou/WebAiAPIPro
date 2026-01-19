@@ -1,5 +1,8 @@
 ﻿namespace CoordExtractorApp.Data
 {
+    /// <summary>
+    /// Base class for all entities
+    /// </summary>
     public abstract class BaseEntity
     {
         public int Id { get; set; }

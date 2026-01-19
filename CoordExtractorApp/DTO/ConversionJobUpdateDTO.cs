@@ -6,7 +6,7 @@
     public class ConversionJobUpdateDTO
     {
         /// <summary>
-        /// The list of corrected coordinates
+        /// The list of coordinates of a conversion job polygon
         /// </summary>
         public List<CoordinateDTO> Coordinates { get; set; } = new();
     }

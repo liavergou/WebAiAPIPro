@@ -8,8 +8,6 @@
         /// <summary>
         /// A list of project IDs associated with the user.
         /// </summary>
-        
-        //για GET /api/users/{id}/projects
-        public List<int> ProjectIds { get; set; } = []; //τα assigned project ids
+        public List<int> ProjectIds { get; set; } = [];
     }
 }

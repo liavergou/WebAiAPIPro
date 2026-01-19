@@ -1,4 +1,4 @@
-﻿using CoordExtractorApp.Services.Geoserver;
+using CoordExtractorApp.Services.Geoserver;
 
 namespace CoordExtractorApp.Services
 {
@@ -7,16 +7,8 @@ namespace CoordExtractorApp.Services
         IUserService UserService { get; }
         IProjectService ProjectService { get; }
         IPromptService PromptService { get; }
-
         IUserProjectsService UserProjectsService { get; }
-
         IConversionJobService ConversionJobService { get; }
-
         IGeoserverService GeoserverService { get; }
-
-        
-        
-
-
     }
 }

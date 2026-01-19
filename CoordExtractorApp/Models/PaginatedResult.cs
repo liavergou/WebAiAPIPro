@@ -13,7 +13,6 @@
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
 
-        //computed. => συντόμευση του get only property
         public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
 
         public PaginatedResult()

@@ -5,8 +5,6 @@
     /// </summary>
     public class CoordinateDTO
     {
-        //για την μετατροπή από wkt σε x,y
-
         /// <summary>
         /// The sequence order of the coordinate in the polygon.
         /// </summary>

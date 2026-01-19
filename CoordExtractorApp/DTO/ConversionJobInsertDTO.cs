@@ -8,20 +8,20 @@ namespace CoordExtractorApp.DTO
     public class ConversionJobInsertDTO
     {
         /// <summary>
-        /// The image file to be processed.
+        /// The multipart image file to process for ocr
         /// </summary>
         [Required(ErrorMessage = "{0} is required.")]
         public IFormFile ImageFile { get; set; } = null!;
 
         /// <summary>
-        /// The ID of the project to which this job belongs.
+        /// The id of the project to which this job belongs
         /// </summary>
         [Required(ErrorMessage = "Job must be assigned to a project")]
         [Range(1, int.MaxValue, ErrorMessage = "Job must be assigned to a valid project")]   
         public int ProjectId { get; set; }
 
         /// <summary>
-        /// The ID of the prompt used for AI processing.
+        /// The ID of the prompt used for AI processing
         /// </summary>
         [Required(ErrorMessage = "Job must be assigned to a prompt")]
         [Range(1, int.MaxValue, ErrorMessage = "Job must be assigned to a valid prompt")]

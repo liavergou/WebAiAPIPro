@@ -7,7 +7,7 @@ using CoordExtractorApp.Exceptions;
 namespace CoordExtractorApp.Controllers
 {
     /// <summary>
-    /// Manages assigned projects for the current user
+    /// Manages assigned projects for the current user.
     /// </summary>
     [ApiController]
     [Route("api/account")]
@@ -15,32 +15,22 @@ namespace CoordExtractorApp.Controllers
     {
         public UserProjectsController(IApplicationService applicationService) : base(applicationService)
         {
-
         }
 
         /// <summary>
-        /// Get projects assigned to the current logged-in user
+        /// Gets projects assigned to the current logged-in user.
         /// </summary>
-        /// <returns>List of assigned projects</returns>
-        //GET USER PROJECTS FOR LOGGED IN USER
-        //GET /api/account/projects
+        /// <returns>List of assigned projects.</returns>
         [HttpGet("projects")]
         [Authorize]
         [ProducesResponseType(typeof(List<ProjectReadOnlyDTO>), 200)]
-        //[ProducesResponseType(401)] //unautorized
-
         public async Task<IActionResult> GetAssignedProjects()
         {
-            //Ο user που συνδέεται με το conversion job
-            var user = await GetUserInfoAsync(); //(base) για τον current user
-
+            var user = await GetUserInfoAsync();
             if (user.Id == null) throw new EntityNotAuthorizedException("User", "User id not found");
 
             var projects = await applicationService.UserProjectsService.GetUserProjectsByUserIdAsync(user.Id.Value);
-            
             return Ok(projects);
         }
-
-
     }
 }

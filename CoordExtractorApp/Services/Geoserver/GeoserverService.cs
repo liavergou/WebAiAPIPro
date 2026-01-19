@@ -1,11 +1,15 @@
-﻿using CoordExtractorApp.Exceptions;
+using CoordExtractorApp.Exceptions;
 using Serilog;
 
 namespace CoordExtractorApp.Services.Geoserver
 {
+    /// <summary>
+    /// Service implementation for communicating with GeoServer.
+    /// Constructs secure WFS requests to GeoServer endpoints and returns the raw geospatial data (GeoJSON) or Shapefile to the client.
+    /// </summary>
     public class GeoserverService : IGeoserverService
     {
-        private readonly IHttpClientFactory httpClientFactory; //διαχειριστής του pool με τις available συνδέσεις (connection pooling).
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly IConfiguration configuration;
         private readonly ILogger<GeoserverService> logger =
            new LoggerFactory().AddSerilog().CreateLogger<GeoserverService>();
@@ -16,41 +20,30 @@ namespace CoordExtractorApp.Services.Geoserver
             this.configuration = configuration;
         }
 
-        /// <summary>
-        /// Retrieves the conversion jobs for a specific project from GeoServer as GeoJSON.
-        /// </summary>
-        /// <param name="projectId">The project ID to filter jobs.</param>
-        /// <param name="username">The username for Keycloak authentication.</param>
-        /// <param name="role">The user role for Keycloak authentication.</param>
-        /// <returns>A string containing the GeoJSON response from GeoServer.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if GeoServer configuration is missing.</exception>
-        /// <exception cref="EntityNotAuthorizedException">Thrown if username or role were not provided.</exception>
-        /// <exception cref="ServerException">Thrown if the connection to GeoServer fails or returns an error.</exception>
         public async Task<string> GetProjectJobsGeoserverAsync(int projectId, string? username, string? role)
         {
             string baseUrl = configuration["Geoserver:BaseUrl"] ?? throw new InvalidOperationException("Geoserver:BaseUrl configuration is missing.");
             string typeName = configuration["Geoserver:ConversionJobsLayer"] ?? throw new InvalidOperationException("Geoserver:ConversionJobsLayer configuration is missing.");
 
-            string cqlFilter = $"ProjectId={projectId}"; //το DeletedAt IS NULL μεταφερθηκε στο sql του view του geoserver
+            string cqlFilter = $"ProjectId={projectId}";
 
-            string encodedCqlFilter = Uri.EscapeDataString(cqlFilter); //το 20% δεν δουλεψε
+            string encodedCqlFilter = Uri.EscapeDataString(cqlFilter);
 
-            //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=application/json&srsName=EPSG:4326 + το φίλτρο
-            //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=application/json&srsName=EPSG:4326&cql_filter=ProjectId%3D21
+
             string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=application/json&srsName=EPSG:4326&cql_filter={encodedCqlFilter}&format_options=filename:project_{projectId}";
 
-            //διορθωση σε δημιουργία client instance απο το factory για καθε request. δεν ήταν σωστό να χρησιμοποιώ τον ίδιο HttpClient. πιθανό Mix στα credentials σε δδιαφορετικές κλήσεις
+
             var client = this.httpClientFactory.CreateClient("GeoserverClient");
 
             try
             {
 
-                //ελεγχος να υπάρχει username role
+
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
                 {
                     throw new EntityNotAuthorizedException("Geoserver", "User and role not found.Cannot authenticate");
                 }
-                //προσθήκη στο header
+
                 client.DefaultRequestHeaders.Add("Keycloak-User", username);
                 client.DefaultRequestHeaders.Add("Keycloak-Role", role);
 
@@ -64,7 +57,7 @@ namespace CoordExtractorApp.Services.Geoserver
                     throw new ServerException("Geoserver", $"Failed to fetch data from Geoserver.");
 
                 }
-                //επιστρέφουμε το περιεχομενο του response(geojson). πρεπει να μετατραπεί σε string γιατι ερχεται σαν data stream
+
                 string content = await response.Content.ReadAsStringAsync();
                 return content;
             }
@@ -85,11 +78,10 @@ namespace CoordExtractorApp.Services.Geoserver
             string cqlFilter = $"ProjectId={projectId}";
             string options = $"filename:project_{projectId};CHARSET:UTF-8";
 
-            string encodedCqlFilter = Uri.EscapeDataString(cqlFilter); //το 20% δεν δουλεψε
+            string encodedCqlFilter = Uri.EscapeDataString(cqlFilter);
             string encodedOptions = Uri.EscapeDataString(options);
 
-            //https://docs.geoserver.org/main/en/user/services/wfs/outputformats.html
-            //http://localhost:8085/geoserver/wfs?service=WFS&request=GetFeature&typeName=topo_app:ConversionJobsView&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter=ProjectId%3D19&format_options=filename:project_19 //μονο αλλαγη output
+
             string url = $"{baseUrl}?service=WFS&request=GetFeature&typeName={typeName}&outputFormat=shape-zip&srsName=EPSG:2100&cql_filter={encodedCqlFilter}&format_options={encodedOptions}";
 
             var client = this.httpClientFactory.CreateClient("GeoserverClient");
@@ -97,12 +89,12 @@ namespace CoordExtractorApp.Services.Geoserver
             try
             {
 
-                //ελεγχος να υπάρχει username role
+
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
                 {
                     throw new EntityNotAuthorizedException("Geoserver", "User and role not found.Cannot authenticate");
                 }
-                //προσθήκη στο header
+
                 client.DefaultRequestHeaders.Add("Keycloak-User", username);
                 client.DefaultRequestHeaders.Add("Keycloak-Role", role);
 
@@ -116,7 +108,7 @@ namespace CoordExtractorApp.Services.Geoserver
                     throw new ServerException("Geoserver", $"Failed to export shapefile from Geoserver.");
 
                 }
-                //επιστρέφουμε το περιεχομενο του response(shapefile σε zip).
+
                 byte[] content = await response.Content.ReadAsByteArrayAsync();
                 return content;
             }
