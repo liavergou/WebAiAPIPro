@@ -3,6 +3,7 @@ using CoordExtractorApp.DTO;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CoordExtractorApp.Core.Constants;
 
 namespace CoordExtractorApp.Controllers
 {
@@ -23,7 +24,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="promptCreateDTO">Prompt creation data.</param>
         /// <returns>The created prompt.</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin, Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(PromptReadOnlyDTO), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
@@ -69,7 +70,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="promptName">Prompt name filter (optional).</param>
         /// <returns>Paginated prompt list.</returns>
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(PromptReadOnlyDTO), 200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult> GetPromptPaginated(
@@ -92,7 +93,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="promptUpdateDto">Updated prompt data.</param>
         /// <returns>No content.</returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] PromptUpdateDTO promptUpdateDto)
