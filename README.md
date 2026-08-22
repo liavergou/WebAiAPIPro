@@ -1,4 +1,4 @@
-# WebAiAPI - ASP.NET Core 8.0 Web API
+# WebAiAPI - ASP.NET Core 10.0 Web API
 
 ## Πώς Λειτουργεί
 Το έργο χωρίζεται σε δύο μέρη:
@@ -104,8 +104,8 @@ Layered Architecture με διαχωρισμό ευθυνών
 ```
 
 ## 6. Tech Stack
-- **Framework**: ASP.NET Core 8.0 Web API
-- **Data Access**: Entity Framework Core 9 (Npgsql Provider)
+- **Framework**: ASP.NET Core 10.0 Web API
+- **Data Access**: Entity Framework Core 10 (Npgsql Provider)
 - **Database**: PostgreSQL 18 με PostGIS extension
 - **Αυθεντικοποίηση**: Keycloak (Docker Latest) via OAuth2 + JWT
 - **AI**: Google Gemini (Google.GenerativeAI v3.4)
