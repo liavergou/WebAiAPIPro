@@ -1,8 +1,10 @@
 using AutoMapper;
+using CoordExtractorApp.Configuration;
 using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.GenerativeAI;
 using CoordExtractorApp.Services.Geoserver;
 using CoordExtractorApp.Services.Keycloak;
+using Microsoft.Extensions.Options;
 
 namespace CoordExtractorApp.Services
 {
@@ -17,8 +19,10 @@ namespace CoordExtractorApp.Services
         private readonly IConfiguration configuration;
         private readonly IGenerativeAIService generativeAIService;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly ILogger<ConversionJobService> conversionJobLogger;
+        private readonly IOptions<GeminiOptions> geminiOptions;
 
-        public ApplicationService(IUnitOfWork unitOfWork, IMapper mapper, IKeycloakAdminService keycloakAdminService, IConfiguration configuration, IGenerativeAIService generativeAIService, IHttpClientFactory httpClientFactory)
+        public ApplicationService(IUnitOfWork unitOfWork, IMapper mapper, IKeycloakAdminService keycloakAdminService, IConfiguration configuration, IGenerativeAIService generativeAIService, IHttpClientFactory httpClientFactory, ILogger<ConversionJobService> conversionJobLogger, IOptions<GeminiOptions> geminiOptions)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
@@ -26,6 +30,8 @@ namespace CoordExtractorApp.Services
             this.configuration = configuration;
             this.generativeAIService = generativeAIService;
             this.httpClientFactory = httpClientFactory;
+            this.conversionJobLogger = conversionJobLogger;
+            this.geminiOptions = geminiOptions;
         }
 
         public IUserService UserService => new UserService(unitOfWork, mapper, keycloakAdminService);
@@ -39,7 +45,9 @@ namespace CoordExtractorApp.Services
                 unitOfWork,
                 configuration,
                 generativeAIService,
-                PromptService
+                PromptService,
+                conversionJobLogger,
+                geminiOptions
             );
 
         public IGeoserverService GeoserverService => new GeoserverService(httpClientFactory, configuration);
