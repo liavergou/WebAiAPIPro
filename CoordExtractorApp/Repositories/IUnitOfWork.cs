@@ -6,10 +6,10 @@
     /// </summary>
     public interface IUnitOfWork
     { 
-        UserRepository UserRepository { get; } // Προσθήκη
-        PromptRepository PromptRepository { get; }
-        ProjectRepository ProjectRepository { get; }
-        ConversionJobRepository ConversionJobRepository { get; }
+        IUserRepository UserRepository { get; } // Προσθήκη
+        IPromptRepository PromptRepository { get; }
+        IProjectRepository ProjectRepository { get; }
+        IConversionJobRepository ConversionJobRepository { get; }
 
         /// <summary>
         /// Commits all changes made in the context to the database.

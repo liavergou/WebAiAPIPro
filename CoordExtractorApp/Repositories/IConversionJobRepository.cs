@@ -7,7 +7,7 @@ namespace CoordExtractorApp.Repositories
     /// <summary>
     /// Repository interface for Conversion Job management.
     /// </summary>
-    public interface IConversionJobRepository
+    public interface IConversionJobRepository : IBaseRepository<ConversionJob>
     {
         /// <summary>
         /// Retrieves all conversion jobs belonging to a specific user.

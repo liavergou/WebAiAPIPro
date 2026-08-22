@@ -7,7 +7,7 @@ namespace CoordExtractorApp.Repositories
     /// <summary>
     /// Repository interface for Project management.
     /// </summary>
-    public interface IProjectRepository
+    public interface IProjectRepository : IBaseRepository<Project>
     {
         /// <summary>
         /// Retrieves a project by its name.

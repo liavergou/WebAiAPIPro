@@ -7,7 +7,7 @@ namespace CoordExtractorApp.Repositories
     /// <summary>
     /// Repository interface for Prompt management.
     /// </summary>
-    public interface IPromptRepository
+    public interface IPromptRepository : IBaseRepository<Prompt>
     {
         /// <summary>
         /// Retrieves a prompt by its name.

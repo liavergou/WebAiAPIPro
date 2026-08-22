@@ -12,11 +12,11 @@ namespace CoordExtractorApp.Repositories
         }
 
        
-        public UserRepository UserRepository => new (context);
-        public PromptRepository PromptRepository => new(context);
+        public IUserRepository UserRepository => new UserRepository(context);
+        public IPromptRepository PromptRepository => new PromptRepository(context);
 
-        public ProjectRepository ProjectRepository => new(context);
-        public ConversionJobRepository ConversionJobRepository => new(context);
+        public IProjectRepository ProjectRepository => new ProjectRepository(context);
+        public IConversionJobRepository ConversionJobRepository => new ConversionJobRepository(context);
         
 
         public async Task<bool> SaveAsync()
