@@ -6,6 +6,7 @@ using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using CoordExtractorApp.Core.Constants;
 
 namespace CoordExtractorApp.Controllers
 {
@@ -26,7 +27,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="projectCreateDTO">Project creation data.</param>
         /// <returns>The created project.</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin, Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(ProjectDTO), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
@@ -56,7 +57,7 @@ namespace CoordExtractorApp.Controllers
         /// </summary>
         /// <returns>List of all projects.</returns>
         [HttpGet("all")]
-        [Authorize(Roles = "Admin, Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(ProjectReadOnlyDTO), 200)]
         public async Task<IActionResult> GetAllProjects()
         {
@@ -72,7 +73,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="projectName">Project name filter (optional).</param>
         /// <returns>Paginated project list.</returns>
         [HttpGet]
-        [Authorize(Roles = "Admin, Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(PaginatedResult<ProjectDTO>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetProjectPaginated(
@@ -95,7 +96,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="projectUpdateDto">Updated project data.</param>
         /// <returns>No content.</returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectUpdateDTO projectUpdateDto)
@@ -110,7 +111,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="id">Project id.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteProject(int id)
@@ -141,7 +142,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="id">Project id.</param>
         /// <returns>Shapefile in ZIP format.</returns>
         [HttpGet("{id}/conversion-jobs/shp")]
-        [Authorize(Roles = "Admin, Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [Produces("application/zip")]
         [ProducesResponseType(typeof(FileResult), 200)]
         public async Task<IActionResult> ExportSHPProjectGeoserverJobs(int id)

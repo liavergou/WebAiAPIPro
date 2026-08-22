@@ -1,16 +1,17 @@
 using CoordExtractorApp.DTO.GenerativeAI;
+using CoordExtractorApp.Configuration;
 using GenerativeAI;
 using GenerativeAI.Types;
+using Microsoft.Extensions.Options;
 
 namespace CoordExtractorApp.Services.GenerativeAI
 {
     /// <summary>
     /// Service implementation for extracting WKT geometry from images using a third-party .NET SDK (Google GenerativeAI) based on Google Gemini REST APIs.
     /// </summary>
-    public class GenerativeAIService(IConfiguration configuration, ILogger<GenerativeAIService> logger) : IGenerativeAIService
+    public class GenerativeAIService(IOptions<GeminiOptions> geminiOptions, ILogger<GenerativeAIService> logger) : IGenerativeAIService
     {
-
-        private readonly IConfiguration configuration = configuration;
+        private readonly GeminiOptions _geminiOptions = geminiOptions.Value;
         private readonly ILogger <GenerativeAIService> logger = logger;
 
         
@@ -18,13 +19,13 @@ namespace CoordExtractorApp.Services.GenerativeAI
         {
             try
             {
-                var apiKey = configuration["Gemini:Credentials:ApiKey"];
+                var apiKey = _geminiOptions.Credentials.ApiKey;
                 if (string.IsNullOrEmpty(apiKey))
                 {
                     throw new InvalidOperationException("Gemini Api Key is not configured in appsettings");
                 }
 
-                var modelName = configuration["Gemini:Model"];
+                var modelName = _geminiOptions.Model;
                 if (string.IsNullOrEmpty(modelName))
                 {
                     throw new InvalidOperationException("Gemini Model is not configured in appsettings");

@@ -59,7 +59,11 @@ namespace CoordExtractorApp
             builder.Services.AddScoped<IProjectService, ProjectService>();
             builder.Services.AddScoped<IConversionJobService, ConversionJobService>();
             builder.Services.AddScoped<IUserProjectsService, UserProjectsService > ();
+            builder.Services.AddScoped<IUserProjectsService, UserProjectsService > ();
             builder.Services.AddScoped<IGeoserverService, GeoserverService > ();
+
+            // Configuration
+            builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection(GeminiOptions.Gemini));
 
 
             // AutoMapper

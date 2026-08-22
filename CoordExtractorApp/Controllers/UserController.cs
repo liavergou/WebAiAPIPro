@@ -4,6 +4,7 @@ using CoordExtractorApp.Models;
 using CoordExtractorApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CoordExtractorApp.Core.Constants;
 
 namespace CoordExtractorApp.Controllers
 {
@@ -24,7 +25,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="userCreateDto">User creation data.</param>
         /// <returns>The created user.</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(UserReadOnlyDTO), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
@@ -42,7 +43,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="userUpdateDto">Updated user data.</param>
         /// <returns>No content.</returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateDTO userUpdateDto)
@@ -57,7 +58,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="id">User id.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteUser(int id)
@@ -86,7 +87,7 @@ namespace CoordExtractorApp.Controllers
         /// </summary>
         /// <returns>List of all users.</returns>
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(IEnumerable<UserReadOnlyDTO>), 200)]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -101,7 +102,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="pageSize">Items per page.</param>
         /// <returns>Paginated user list.</returns>
         [HttpGet("paginated")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(PaginatedResult<UserReadOnlyDTO>), 200)]
         public async Task<IActionResult> GetUsersPaginated(
             [FromQuery] int? pageNumber,
@@ -120,7 +121,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="id">User id.</param>
         /// <returns>List of project IDs.</returns>
         [HttpGet("{id}/projects")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(UserProjectsDTO), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetUserProjects(int id)
@@ -136,7 +137,7 @@ namespace CoordExtractorApp.Controllers
         /// <param name="dto">Updated project assignments.</param>
         /// <returns>Updated user projects.</returns>
         [HttpPut("{id}/projects")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = AuthConstants.AdminOrManager)]
         [ProducesResponseType(typeof(UserProjectsDTO), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateUserProjects(int id, [FromBody] UserProjectsUpdateDTO dto)

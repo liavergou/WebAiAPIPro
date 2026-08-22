@@ -7,7 +7,10 @@ using CoordExtractorApp.Repositories;
 using CoordExtractorApp.Services.GenerativeAI;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using CoordExtractorApp.Configuration;
+using CoordExtractorApp.Core.Constants;
 
 namespace CoordExtractorApp.Services
 {
@@ -22,19 +25,23 @@ namespace CoordExtractorApp.Services
         private readonly IConfiguration configuration;
         private readonly IGenerativeAIService generativeAIService;
         private readonly IPromptService promptService;
-        private readonly ILogger<ConversionJobService> logger =
-            new LoggerFactory().AddSerilog().CreateLogger<ConversionJobService>();
+        private readonly ILogger<ConversionJobService> logger;
+        private readonly GeminiOptions geminiOptions;
 
         public ConversionJobService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
             IGenerativeAIService generativeAIService,
-            IPromptService promptService)
+            IPromptService promptService,
+            ILogger<ConversionJobService> logger,
+            IOptions<GeminiOptions> geminiOptions)
         {
             this.unitOfWork = unitOfWork;
             this.configuration = configuration;
             this.generativeAIService = generativeAIService;
             this.promptService = promptService;
+            this.logger = logger;
+            this.geminiOptions = geminiOptions.Value;
         }
 
         public async Task<ConversionJobReadOnlyDTO> CreateAndProcessJobAsync(ConversionJobInsertDTO dto, int userId)
@@ -53,7 +60,7 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
                 }
 
-                if (userExists.Role == "Member")
+                if (userExists.Role == AuthConstants.MemberRole)
                 {
                     var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
                     if (!assignedProjectIds.Contains(dto.ProjectId))
@@ -116,7 +123,7 @@ namespace CoordExtractorApp.Services
 
                     newJob.Geom = geometry;
                     newJob.Status = JobStatus.Completed;
-                    newJob.ModelUsed = configuration["Gemini:Model"];
+                    newJob.ModelUsed = geminiOptions.Model;
                 }
                 catch (Exception ex) when
                 (ex is InvalidOperationException || ex is EntityNotFoundException || ex is ArgumentNullException)
@@ -185,7 +192,7 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
                 }
 
-                if (userExists.Role == "Member")
+                if (userExists.Role == AuthConstants.MemberRole)
                 {
                     var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
                     if (!assignedProjectIds.Contains(job.ProjectId))
@@ -262,7 +269,7 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
                 }
 
-                if (userExists.Role == "Member")
+                if (userExists.Role == AuthConstants.MemberRole)
                 {
                     var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
                     if (!assignedProjectIds.Contains(job.ProjectId))
@@ -318,7 +325,7 @@ namespace CoordExtractorApp.Services
                     throw new EntityNotFoundException("User", $"User with id :{userId} not found.");
                 }
 
-                if (userExists.Role == "Member")
+                if (userExists.Role == AuthConstants.MemberRole)
                 {
                     var assignedProjectIds = await unitOfWork.UserRepository.GetProjectIdsForUserAsync(userId);
                     if (!assignedProjectIds.Contains(job.ProjectId))
