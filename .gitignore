@@ -6,6 +6,9 @@
 # JetBrains IDEs (Rider, IntelliJ)
 /.idea
 
+# Windows reserved filename artifact
+CoordExtractorApp/nul
+
 # User-specific files
 *.rsuser
 *.suo
